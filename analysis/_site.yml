@@ -1,7 +1,7 @@
-name: "Integration"
-output_dir: ../docs
+name: Integration
+output_dir: ../public
 navbar:
-  title: "Integration"
+  title: Integration
   left:
   - text: Home
     href: index.html
@@ -9,6 +9,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fab fa-gitlab
+    text: Source code
+    href: https://gitlab.com/Sophie-Alice/Integration
 output:
   workflowr::wflow_html:
     toc: yes
