@@ -1,0 +1,648 @@
+---
+title: "Mac_Integrated_inspection"
+author: "Sophie"
+date: "2026-09-10"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: inline
+---
+
+
+# Setup
+
+```{r, message=FALSE, warning = FALSE}
+rm(list=ls())
+gc()
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(Seurat)
+library(hdf5r)
+library(scCustomize)
+library(patchwork)
+library(cowplot)
+library(ggrepel)
+library(workflowr)
+library(scDblFinder)
+library(clustree)
+library(harmony)
+library(speckle)
+library(MAST)
+library(tibble)
+library(EnhancedVolcano)
+
+library(ggarchery)
+library(ggtangle)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(GO.db)
+library(DOSE)
+library(fgsea)
+library(forcats)
+library(SCpubr)
+library(assertthat)
+library(UCell)
+library(DT)
+
+library(ggforce) 
+library(enrichplot)
+library(ggrain)
+library(ComplexHeatmap)
+library(tidyverse)
+library(circlize)
+library(ggpubr)
+
+
+```
+
+
+# Import Rds
+
+```{r}
+
+################### MT-Data
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated_MT_Derived_sample.rds"
+macrophage_merged <- read_rds(path)
+
+
+
+custom_palette <- colorRampPalette(c("#005EA8", "#6DB335", "#FFD966", "#EDAAD2", "#9F1C67"))
+cols2 <- custom_palette(2)
+cols3 <- custom_palette(3)
+cols4 <- custom_palette(4)
+cols5 <- custom_palette(5)
+cols6 <- custom_palette(6)
+
+cols8 <- custom_palette(8)
+
+cols10 <- custom_palette(10)
+
+cols39 <- custom_palette(39)
+```
+
+# Vizualisations
+
+```{r}
+DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.2",
+  cols = cols8,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Combined Macrophages SCT_snn_res.0.2") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.3",
+  cols = cols10,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Combined Macrophages SCT_snn_res.0.3") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+Idents(macrophage_merged) <- "SCT_snn_res.0.2"
+
+```
+
+## Now we can check whether out MT Macs are distributed differentlyl across conditions
+
+ - visually we can identify a decrease in cluster 0 in TGF_B condition
+ 
+```{r}
+
+DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.2",
+  split.by = "TGF_status",
+  cols = cols8,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Combined Macrophages SCT_snn_res.0.2") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+```
+
+### Proportions
+
+```{r}
+cellCounts2 <- table(Celltype = macrophage_merged$SCT_snn_res.0.2, sample = macrophage_merged$Dataset)
+cellPerc <- sweep(cellCounts2, 2, colSums(cellCounts2), "/")
+p1 <- ggplot(data = as.data.frame(cellPerc), aes(x = sample, fill = Celltype, y = Freq)) +
+  geom_bar(stat = "identity") +
+  theme_bw() + 
+  scale_fill_manual(values = cols8) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold", size = 15)) + 
+  labs(title = "Cluster Proportions across Datasets", x = "", y = "fraction of cells")
+p1
+
+
+```
+
+## To which cluster do our MT-Mac distribute to?
+ 
+ - Labeling to Cluster 0 is much higher in NC compared to TGF-B
+ - Labeling to Cluster 1 is much higher in TGF-B compared to NC
+ - Is there a shift in cell identity?
+ 
+```{r}
+#  cluster overlap between MT conditions and reference cell states
+table(macrophage_merged$SCT_snn_res.0.2, macrophage_merged$cell_states)
+
+# Extract metadata for the MT dataset only
+mt_meta <- macrophage_merged@meta.data %>% 
+  filter(Dataset == "MT_Data")
+
+# 3. Plot cluster distribution: Untreated vs. TGF-β treated
+ggplot(mt_meta, aes(x = TGF_status, fill = SCT_snn_res.0.2)) +
+  geom_bar(position = "fill") +
+  theme_classic() +
+  scale_fill_manual(values = cols8) +
+  labs(y = "Proportion of Cells", x = "MT TGF_status", title = "Shift in Integrated Clusters (+/- TGFb)")
+
+
+```
+
+### Chi-squared to check
+
+Propeller is not possible because we have N = 1 per condition
+
+ - We do have a sign. diff. in the distibution of condition to clusters
+ 
+```{r}
+# contingency table (Clusters x Condition)
+counts_table <- table(mt_meta$SCT_snn_res.0.2, mt_meta$TGF_status)
+print(counts_table)
+
+# Global test across all clusters
+chisq_res <- chisq.test(counts_table)
+print(chisq_res)
+
+
+## Post hoc Fishers Exact to compare specific clusters
+
+cluster_stats <- data.frame(
+  Cluster = rownames(counts_table),
+  NC_Count = counts_table[, "NC"],
+  TGFb_Count = counts_table[, "TGF_B"],
+  stringsAsFactors = FALSE
+)
+
+# Total cells per condition
+total_nc <- sum(counts_table[, "NC"])
+total_tgfb <- sum(counts_table[, "TGF_B"])
+
+# Run 2x2 Fisher's test per cluster
+cluster_stats <- cluster_stats %>%
+  rowwise() %>%
+  mutate(
+    NC_Other = total_nc - NC_Count,
+    TGFb_Other = total_tgfb - TGFb_Count,
+    p_val = fisher.test(matrix(c(NC_Count, NC_Other, TGFb_Count, TGFb_Other), nrow = 2))$p.value,
+    Prop_NC = NC_Count / total_nc,
+    Prop_TGFb = TGFb_Count / total_tgfb,
+    Log2FC = log2((Prop_TGFb + 1e-5) / (Prop_NC + 1e-5))
+  ) %>%
+  ungroup() %>%
+  mutate(FDR = p.adjust(p_val, method = "BH"))
+
+print(cluster_stats)
+
+
+```
+
+
+# Find markers per cluster 
+
+ - to figure out what cluster 0 and 1 are
+ 
+ - Cluster 0 seems to be more "tissue resident" - sign change
+ - Cluster 1 seems to be more Antigen-Presenting, immune surveillance type - sign change
+ - Cluster 2 seems to be more inflammatory - no sign. change
+ 
+
+```{r}
+
+Idents(macrophage_merged) <- "SCT_snn_res.0.2"
+DefaultAssay(macrophage_merged) <- "SCT"
+
+
+macrophage_merged <- PrepSCTFindMarkers(macrophage_merged)
+
+
+Markers <- FindAllMarkers(
+  macrophage_merged,
+  assay = "SCT",
+  only.pos = TRUE,
+  min.pct = 0.25,      
+  logfc.threshold = 0.5 
+)
+
+
+Markers_top10 <- as.data.frame(Markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_log2FC))
+Markers_top3 <- as.data.frame(Markers %>% group_by(cluster) %>% top_n(n = 3, wt = avg_log2FC))
+
+
+# the to 10 genes of cluster 0:
+
+Markers_top10 %>% 
+  filter(cluster == "0") %>% 
+  pull(gene)
+
+# the to 10 genes of cluster 1:
+
+Markers_top10 %>% 
+  filter(cluster == "1") %>% 
+  pull(gene)
+
+# the to 10 genes of cluster 2:
+
+Markers_top10 %>% 
+  filter(cluster == "2") %>% 
+  pull(gene)
+
+```
+
+## Scores
+
+### Resident Macrophages score
+
+```{r}
+
+# Configuration & Gene List Setup
+
+score_name     <- "Resident_Score"
+score_title    <- "Resident Macrophage Signature"
+resident_genes <- c("LYVE1", "F13A1", "FOLR2", "MRC1", "CD163", "SELENOP", "C1QA", "TIMD4")
+
+DefaultAssay(macrophage_merged) <- "RNA"
+
+# Filter specifically for MT_Data dataset
+seurat_obj <- subset(macrophage_merged, Dataset == "MT_Data")
+
+# Filter genes present in object to avoid UCell execution errors
+valid_genes <- intersect(resident_genes, rownames(seurat_obj))
+
+
+# Add UCell Module Score
+
+features_list <- list()
+features_list[[score_name]] <- valid_genes
+
+seurat_obj <- AddModuleScore_UCell(
+  obj = seurat_obj,
+  features = features_list,
+  name = "_UCell"
+)
+
+# Target UCell column generated by Seurat: "Resident_Score_UCell"
+score_col <- paste0(score_name, "_UCell")
+
+# Set up comparison groups & colors
+comp <- c("NC", "TGF_B")
+comp_colors <- c("NC" = "#005EA8", "TGF_B" = "#9F1C67")
+
+
+seurat_obj <- subset(seurat_obj, TGF_status %in% comp)
+seurat_obj$TGF_status <- factor(seurat_obj$TGF_status, levels = comp)
+
+
+plot_df <- FetchData(seurat_obj, vars = c(score_col, "TGF_status"))
+colnames(plot_df) <- c("Score", "TGF_status")
+
+
+p_violin <- ggplot(plot_df, aes(x = TGF_status, y = Score, fill = TGF_status)) +
+  geom_violin(scale = "width", trim = TRUE, alpha = 0.7, color = "black") +
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA, color = "black") +
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = list(comp), 
+    label = "p.signif"
+  ) +
+  scale_fill_manual(values = comp_colors) +
+  theme_classic() +
+  labs(
+    title = paste0("Macrophage (MT): ", score_title),
+    subtitle = paste0(comp[1], " vs ", comp[2]),
+    x = "TGF Status",
+    y = paste0(score_title, " (UCell Score)")
+  ) +
+  theme(
+    plot.title    = element_text(face = "bold", size = 12, hjust = 0),
+    plot.subtitle = element_text(face = "italic", size = 10, hjust = 0),
+    legend.position = "none",
+    axis.text     = element_text(size = 11, color = "black"),
+    axis.title    = element_text(size = 12)
+  )
+
+# Render Violin Plot
+print(p_violin)
+
+
+
+p_split <- FeaturePlot_scCustom(
+  seurat_obj, 
+  features = score_col,     
+  split.by = "TGF_status"
+) 
+
+p_split <- p_split + 
+  plot_annotation(
+    title    = paste0("Macrophage (MT): ", score_title),
+    subtitle = paste0(comp[1], " vs ", comp[2]),
+    theme    = theme(
+      plot.title    = element_text(face = "bold", size = 12, hjust = 0),
+      plot.subtitle = element_text(face = "italic", size = 10, hjust = 0)
+    )
+  ) & 
+  theme(
+    aspect.ratio = 1.0,
+    axis.text.y  = element_text(size = 10, hjust = 0),
+    axis.title   = element_text(face = "plain")
+  )
+
+# Render Split Feature Plot
+print(p_split)
+
+
+```
+
+
+### Activating Macrophages score
+
+```{r}
+
+# Configuration & Gene List Setup
+
+score_name     <- "Activating_Score"
+score_title    <- "Activating Macrophage Signature"
+activation_genes <- c("CD68", "LAMP1", "CTSB", "CTSD", "LGALS3", "CAPG", "MSR1", "GRN", "PLA2G7", "ATP6V0C")
+
+DefaultAssay(macrophage_merged) <- "RNA"
+
+# Filter specifically for MT_Data dataset
+seurat_obj <- subset(macrophage_merged, Dataset == "MT_Data")
+
+# Filter genes present in object to avoid UCell execution errors
+valid_genes <- intersect(activation_genes, rownames(seurat_obj))
+
+
+# Add UCell Module Score
+
+features_list <- list()
+features_list[[score_name]] <- valid_genes
+
+seurat_obj <- AddModuleScore_UCell(
+  obj = seurat_obj,
+  features = features_list,
+  name = "_UCell"
+)
+
+# Target UCell column generated by Seurat: "Resident_Score_UCell"
+score_col <- paste0(score_name, "_UCell")
+
+# Set up comparison groups & colors
+comp <- c("NC", "TGF_B")
+comp_colors <- c("NC" = "#005EA8", "TGF_B" = "#9F1C67")
+
+
+seurat_obj <- subset(seurat_obj, TGF_status %in% comp)
+seurat_obj$TGF_status <- factor(seurat_obj$TGF_status, levels = comp)
+
+
+plot_df <- FetchData(seurat_obj, vars = c(score_col, "TGF_status"))
+colnames(plot_df) <- c("Score", "TGF_status")
+
+
+p_violin <- ggplot(plot_df, aes(x = TGF_status, y = Score, fill = TGF_status)) +
+  geom_violin(scale = "width", trim = TRUE, alpha = 0.7, color = "black") +
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA, color = "black") +
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = list(comp), 
+    label = "p.signif"
+  ) +
+  scale_fill_manual(values = comp_colors) +
+  theme_classic() +
+  labs(
+    title = paste0("Macrophage (MT): ", score_title),
+    subtitle = paste0(comp[1], " vs ", comp[2]),
+    x = "TGF Status",
+    y = paste0(score_title, " (UCell Score)")
+  ) +
+  theme(
+    plot.title    = element_text(face = "bold", size = 12, hjust = 0),
+    plot.subtitle = element_text(face = "italic", size = 10, hjust = 0),
+    legend.position = "none",
+    axis.text     = element_text(size = 11, color = "black"),
+    axis.title    = element_text(size = 12)
+  )
+
+# Render Violin Plot
+print(p_violin)
+
+
+
+p_split <- FeaturePlot_scCustom(
+  seurat_obj, 
+  features = score_col,     
+  split.by = "TGF_status"
+) 
+
+p_split <- p_split + 
+  plot_annotation(
+    title    = paste0("Macrophage (MT): ", score_title),
+    subtitle = paste0(comp[1], " vs ", comp[2]),
+    theme    = theme(
+      plot.title    = element_text(face = "bold", size = 12, hjust = 0),
+      plot.subtitle = element_text(face = "italic", size = 10, hjust = 0)
+    )
+  ) & 
+  theme(
+    aspect.ratio = 1.0,
+    axis.text.y  = element_text(size = 10, hjust = 0),
+    axis.title   = element_text(face = "plain")
+  )
+
+# Render Split Feature Plot
+print(p_split)
+
+
+```
+
+### Inflammatory Macrophages score
+
+```{r}
+
+# Configuration & Gene List Setup
+
+score_name     <- "Inflammatory_Score"
+score_title    <- "Inflammatory Macrophage Signature"
+inflammatory_genes <- c("IL1B", "TNF", "IL6", "CXCL8", "CCL2", "CCL3", "CCL4", "PTGS2", "NLRP3", "NFKB1")
+
+DefaultAssay(macrophage_merged) <- "RNA"
+
+# Filter specifically for MT_Data dataset
+seurat_obj <- subset(macrophage_merged, Dataset == "MT_Data")
+
+# Filter genes present in object to avoid UCell execution errors
+valid_genes <- intersect(inflammatory_genes, rownames(seurat_obj))
+
+
+# Add UCell Module Score
+
+features_list <- list()
+features_list[[score_name]] <- valid_genes
+
+seurat_obj <- AddModuleScore_UCell(
+  obj = seurat_obj,
+  features = features_list,
+  name = "_UCell"
+)
+
+# Target UCell column generated by Seurat: "Resident_Score_UCell"
+score_col <- paste0(score_name, "_UCell")
+
+# Set up comparison groups & colors
+comp <- c("NC", "TGF_B")
+comp_colors <- c("NC" = "#005EA8", "TGF_B" = "#9F1C67")
+
+
+seurat_obj <- subset(seurat_obj, TGF_status %in% comp)
+seurat_obj$TGF_status <- factor(seurat_obj$TGF_status, levels = comp)
+
+
+plot_df <- FetchData(seurat_obj, vars = c(score_col, "TGF_status"))
+colnames(plot_df) <- c("Score", "TGF_status")
+
+
+p_violin <- ggplot(plot_df, aes(x = TGF_status, y = Score, fill = TGF_status)) +
+  geom_violin(scale = "width", trim = TRUE, alpha = 0.7, color = "black") +
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA, color = "black") +
+  stat_compare_means(
+    method = "wilcox.test", 
+    comparisons = list(comp), 
+    label = "p.signif"
+  ) +
+  scale_fill_manual(values = comp_colors) +
+  theme_classic() +
+  labs(
+    title = paste0("Macrophage (MT): ", score_title),
+    subtitle = paste0(comp[1], " vs ", comp[2]),
+    x = "TGF Status",
+    y = paste0(score_title, " (UCell Score)")
+  ) +
+  theme(
+    plot.title    = element_text(face = "bold", size = 12, hjust = 0),
+    plot.subtitle = element_text(face = "italic", size = 10, hjust = 0),
+    legend.position = "none",
+    axis.text     = element_text(size = 11, color = "black"),
+    axis.title    = element_text(size = 12)
+  )
+
+# Render Violin Plot
+print(p_violin)
+
+
+
+p_split <- FeaturePlot_scCustom(
+  seurat_obj, 
+  features = score_col,     
+  split.by = "TGF_status"
+) 
+
+p_split <- p_split + 
+  plot_annotation(
+    title    = paste0("Macrophage (MT): ", score_title),
+    subtitle = paste0(comp[1], " vs ", comp[2]),
+    theme    = theme(
+      plot.title    = element_text(face = "bold", size = 12, hjust = 0),
+      plot.subtitle = element_text(face = "italic", size = 10, hjust = 0)
+    )
+  ) & 
+  theme(
+    aspect.ratio = 1.0,
+    axis.text.y  = element_text(size = 10, hjust = 0),
+    axis.title   = element_text(face = "plain")
+  )
+
+# Render Split Feature Plot
+print(p_split)
+
+
+```
+
+```{r}
+
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
