@@ -1,5 +1,5 @@
 name: Integration
-output_dir: ../public
+output_dir: ../docs
 navbar:
   title: Integration
   left:
@@ -10,9 +10,9 @@ navbar:
   - text: License
     href: license.html
   right:
-  - icon: fab fa-gitlab
+  - icon: fab fa-github
     text: Source code
-    href: https://gitlab.com/Sophie-Alice/Integration
+    href: https://github.com/Sophie-Alice/MT_Integration
 output:
   workflowr::wflow_html:
     toc: yes
