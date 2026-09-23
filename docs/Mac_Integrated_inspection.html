@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-09-15
+<strong>Last updated:</strong> 2026-09-23
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomSophieAliceMTIntegrationtreeeadda7e02d6c602f9444702ac989d13d1bed4541targetblankeadda7ea">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomSophieAliceMTIntegrationtree630c800055e8f04df2e4142c72980c1b0e55f277targetblank630c800a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/Sophie-Alice/MT_Integration/tree/eadda7e02d6c602f9444702ac989d13d1bed4541" target="_blank">eadda7e</a>
+<a href="https://github.com/Sophie-Alice/MT_Integration/tree/630c800055e8f04df2e4142c72980c1b0e55f277" target="_blank">630c800</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomSophieAliceMTIntegrationtreeeadda7e02d6c602f9444702ac989d13d1bed4541targetblankeadda7ea"
+id="strongRepositoryversionstrongahrefhttpsgithubcomSophieAliceMTIntegrationtree630c800055e8f04df2e4142c72980c1b0e55f277targetblank630c800a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/Sophie-Alice/MT_Integration/tree/eadda7e02d6c602f9444702ac989d13d1bed4541" target="_blank">eadda7e</a>.
+<a href="https://github.com/Sophie-Alice/MT_Integration/tree/630c800055e8f04df2e4142c72980c1b0e55f277" target="_blank">630c800</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -553,7 +553,15 @@ depends on. Below is the status of the Git repository when the results
 were generated:
 </p>
 <pre><code>
-working directory clean
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  analysis/Integratin_test.Rmd
+    Untracked:  analysis/Integration3.Rmd
+    Untracked:  analysis/core
+
 </code></pre>
 <p>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not
@@ -600,6 +608,40 @@ Message
 <tbody>
 <tr>
 <td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/Sophie-Alice/MT_Integration/blob/630c800055e8f04df2e4142c72980c1b0e55f277/analysis/Mac_Integrated_inspection.Rmd" target="_blank">630c800</a>
+</td>
+<td>
+Sophie
+</td>
+<td>
+2026-09-23
+</td>
+<td>
+Update integration inspection analysis and index page
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/Sophie-Alice/MT_Integration/a091c41013343f4228db01f270e0a5e9ff1f0e28/docs/Mac_Integrated_inspection.html" target="_blank">a091c41</a>
+</td>
+<td>
+Sophie
+</td>
+<td>
+2026-09-15
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
 html
 </td>
 <td>
@@ -644,8 +686,8 @@ Integrated assay
 <pre class="r"><code>rm(list=ls())
 gc()</code></pre>
 <pre><code>          used (Mb) gc trigger (Mb) max used (Mb)
-Ncells  903167 48.3    1744954 93.2  1315497 70.3
-Vcells 1583051 12.1    8388608 64.0  2414462 18.5</code></pre>
+Ncells  849960 45.4    1603408 85.7  1302840 69.6
+Vcells 1521243 11.7    8388608 64.0  2485756 19.0</code></pre>
 <pre class="r"><code>library(readr)
 library(dplyr)
 library(ggplot2)
@@ -688,7 +730,7 @@ library(ggpubr)</code></pre>
 <div id="import-rds" class="section level1">
 <h1>Import Rds</h1>
 <pre class="r"><code>################### MT-Data
-path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated_MT_Derived_sample.rds&quot;
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated3_MT_Derived_sample.rds&quot;
 macrophage_merged &lt;- read_rds(path)
 
 
@@ -834,7 +876,7 @@ condition</li>
   macrophage_merged,
   reduction = &quot;umap&quot;,
   group.by = &quot;SCT_snn_res.0.2&quot;,
-  split.by = &quot;TGF_status&quot;,
+  split.by = &quot;condition&quot;,
   cols = cols8,
   label = TRUE,
   repel = TRUE,
@@ -849,7 +891,6 @@ condition</li>
     axis.title = element_text(size = 12, face = &quot;bold&quot;),
     plot.title = element_text(size = 14, face = &quot;bold&quot;, hjust = 0.5)
   )</code></pre>
-<pre><code>Warning: Removing 180767 cells missing data for vars requested</code></pre>
 <p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
@@ -952,70 +993,52 @@ class="section level2">
 table(macrophage_merged$SCT_snn_res.0.2, macrophage_merged$cell_states)</code></pre>
 <pre><code>   
     CD14+Mo CD16+Mo DOCK4+MØ1 DOCK4+MØ2 IL17RA+Mo LYVE1+MØ1 LYVE1+MØ2 LYVE1+MØ3
-  0      46     241       977       401         0      1352      1190       910
-  1     393     683      1545       212         2       408       199       503
-  2     348     142       222       807        29        91        66        93
-  3     810    1645       150        30         1       825       341       310
-  4       4      12         2         1         0        10        11        13
-  5      53     367        51        21         0         3         5         0
-  6     227     182       255       129         0       297       258       122
-  7       2       6        37        25         0        32        18         6
+  0      47     204       700       451         0      1160       796       700
+  1      94     327      1071       271         3       123       107       133
+  2       3      45       585       107         1        48       154        67
+  3       5      30       178        68         2        34       104        28
+  4      36      74       244       402        24        48        45        27
    
     Macrophages  Mast Mast_Cells MØ_AgP MO_CD16+ MØ_mod Mo_pi MO_VCAN+
-  0       16522     4          8    149       29    208    86       66
-  1        8936     7          7    253      138     24   456     2621
-  2        3071     1          1    266       17     64   177      330
-  3        1043   149        313    472        5    942   449       22
-  4          44  1371       1012      4        3      4    35        3
-  5          93     0          0      0      881      0   121      127
-  6          93    11          0    126        0     70   309        6
-  7         576     0          0      8        0      1    19        0
+  0       15468     3          9     78       25    109    50       60
+  1        8495    20          5     34     1002      9   160     2749
+  2        2758     2          0      7       21      9    38      113
+  3         952  1270       1325     12        2      4    48       27
+  4        2705     1          2     19        8      1    59      140
    
     Monocytes MP_FOLR2 MP_ISG MP_LYVE1hi/MHCII_intermediate MP_LYVE1hi/MHCII_lo
-  0         8     1451   1550                          5069               16381
-  1       168     1229    367                           482                 601
-  2        15       84     78                            80                 196
-  3        10      371     45                           108                 338
-  4         0       26     13                            44                 132
-  5       602        4      2                             4                  11
-  6         1        4      8                            12                  33
-  7         0       11      4                            19                  40
+  0        10     1556   1428                          4172               14634
+  1       776      762    281                           944                 601
+  2         2      437    198                           200                1221
+  3        10      146     41                           160                 428
+  4         6      172    103                           199                 291
    
     MP_LYVE1lo/MHCII_hi MP_NFkB MP_OSM MP_transitional MP_TREM2+ MP-B_cell
-  0                2895     156   2421            1414       449       110
-  1                3356      91    271            1199      2400       469
-  2                 757     204   1358              51      1173        30
-  3                  77      11    101              26        39        96
-  4                 125       1     15              15        37        14
-  5                   2       2      2               7         7         2
-  6                  38       4     15              35         5         0
-  7                  29       4      7               1         5         2
+  0                2321     167   2618            1176       304        78
+  1                2615      73    267            1018      2485       282
+  2                 830      48    295             372       193       106
+  3                 297      16     87              39        73       223
+  4                1032     150    794              73       983        34
    
     MP-FGF13 MP-GCH1 MP-Non-macrophage MP-ProlifMP MP-TPRG1   MY0    NA    NØ
-  0    26293      73               911         576     1509  2933    20     2
-  1     3176     294               568         456    12150  3288    14    13
-  2     1909      47               172          80     3044   412     1    64
-  3      666      28               492          65      453  3575   622    11
-  4       36       2                 5           7       30   475  3803     0
-  5       22     985                54           2      214    52     3     2
-  6       71       3                 1           5       37    13     2    29
-  7       20       0                58         742       12    66     0     0
+  0    24309      79               762         745     1317  2373    26     1
+  1     2575    1244               516         514    11657  1862    12     0
+  2     3138      61               336         297     1666  2246     2     0
+  3      365       9               461         264      281  3617  4423     0
+  4     1806      39               186         113     2528   400     2     1
    
     prolif_Myeloids unclassified.MP1 unclassified.MP2 unclassified.MP3
-  0             209              542              245              211
-  1             246              306              292              104
-  2              46               33               22               24
-  3              22              153               32               91
-  4              17               21               33               45
-  5               0                3                0                1
-  6               3                6                0                1
-  7             500                5                5                4</code></pre>
+  0             269              388              139              168
+  1             242              174              123               74
+  2             188              314              239               46
+  3             153               85               56              137
+  4              66               47               36               34</code></pre>
 <pre class="r"><code># Extract metadata for the MT dataset only
 mt_meta &lt;- macrophage_merged@meta.data %&gt;% 
   filter(Dataset == &quot;MT_Data&quot;)
 
 # 3. Plot cluster distribution: Untreated vs. TGF-β treated
-ggplot(mt_meta, aes(x = TGF_status, fill = SCT_snn_res.0.2)) +
+ggplot(mt_meta, aes(x = condition, fill = SCT_snn_res.0.2)) +
   geom_bar(position = &quot;fill&quot;) +
   theme_classic() +
   scale_fill_manual(values = cols8) +
@@ -1066,39 +1089,35 @@ Sophie
 clusters</li>
 </ul>
 <pre class="r"><code># contingency table (Clusters x Condition)
-counts_table &lt;- table(mt_meta$SCT_snn_res.0.2, mt_meta$TGF_status)
+counts_table &lt;- table(mt_meta$SCT_snn_res.0.2, mt_meta$condition)
 print(counts_table)</code></pre>
 <pre><code>   
-     NC TGF_B
-  0 356    66
-  1 113   181
-  2 101    83
-  3  66    76
-  4   9    33
-  5   9    11
-  6   4     1
-  7   4    13</code></pre>
+    no_TGF with_TGF
+  0    358       48
+  1    117      204
+  2     27       30
+  3     70      111
+  4     90       71</code></pre>
 <pre class="r"><code># Global test across all clusters
-chisq_res &lt;- chisq.test(counts_table)</code></pre>
-<pre><code>Warning in chisq.test(counts_table): Chi-squared approximation may be incorrect</code></pre>
-<pre class="r"><code>print(chisq_res)</code></pre>
+chisq_res &lt;- chisq.test(counts_table)
+print(chisq_res)</code></pre>
 <pre><code>
     Pearson&#39;s Chi-squared test
 
 data:  counts_table
-X-squared = 209.63, df = 7, p-value &lt; 2.2e-16</code></pre>
+X-squared = 244.72, df = 4, p-value &lt; 2.2e-16</code></pre>
 <pre class="r"><code>## Post hoc Fishers Exact to compare specific clusters
 
 cluster_stats &lt;- data.frame(
   Cluster = rownames(counts_table),
-  NC_Count = counts_table[, &quot;NC&quot;],
-  TGFb_Count = counts_table[, &quot;TGF_B&quot;],
+  NC_Count = counts_table[, &quot;no_TGF&quot;],
+  TGFb_Count = counts_table[, &quot;with_TGF&quot;],
   stringsAsFactors = FALSE
 )
 
 # Total cells per condition
-total_nc &lt;- sum(counts_table[, &quot;NC&quot;])
-total_tgfb &lt;- sum(counts_table[, &quot;TGF_B&quot;])
+total_nc &lt;- sum(counts_table[, &quot;no_TGF&quot;])
+total_tgfb &lt;- sum(counts_table[, &quot;with_TGF&quot;])
 
 # Run 2x2 Fisher&#39;s test per cluster
 cluster_stats &lt;- cluster_stats %&gt;%
@@ -1115,17 +1134,14 @@ cluster_stats &lt;- cluster_stats %&gt;%
   mutate(FDR = p.adjust(p_val, method = &quot;BH&quot;))
 
 print(cluster_stats)</code></pre>
-<pre><code># A tibble: 8 × 10
+<pre><code># A tibble: 5 × 10
   Cluster NC_Count TGFb_Count NC_Other TGFb_Other    p_val Prop_NC Prop_TGFb
   &lt;chr&gt;      &lt;int&gt;      &lt;int&gt;    &lt;int&gt;      &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;
-1 0            356         66      306        398 2.44e-44 0.538     0.142  
-2 1            113        181      549        283 3.38e-16 0.171     0.390  
-3 2            101         83      561        381 2.52e- 1 0.153     0.179  
-4 3             66         76      596        388 1.86e- 3 0.0997    0.164  
-5 4              9         33      653        431 6.28e- 7 0.0136    0.0711 
-6 5              9         11      653        453 2.53e- 1 0.0136    0.0237 
-7 6              4          1      658        463 6.54e- 1 0.00604   0.00216
-8 7              4         13      658        451 4.70e- 3 0.00604   0.0280 
+1 0            358         48      304        416 5.07e-56  0.541     0.103 
+2 1            117        204      545        260 1.04e-21  0.177     0.440 
+3 2             27         30      635        434 7.44e- 2  0.0408    0.0647
+4 3             70        111      592        353 3.26e- 9  0.106     0.239 
+5 4             90         71      572        393 4.37e- 1  0.136     0.153 
 # ℹ 2 more variables: Log2FC &lt;dbl&gt;, FDR &lt;dbl&gt;</code></pre>
 </div>
 </div>
@@ -1146,7 +1162,7 @@ DefaultAssay(macrophage_merged) &lt;- &quot;SCT&quot;
 
 
 macrophage_merged &lt;- PrepSCTFindMarkers(macrophage_merged)</code></pre>
-<pre><code>Found 172 SCT models. Recorrecting SCT counts using minimum median counts: 463</code></pre>
+<pre><code>Found 344 SCT models. Recorrecting SCT counts using minimum median counts: 316</code></pre>
 <pre class="r"><code>Markers &lt;- FindAllMarkers(
   macrophage_merged,
   assay = &quot;SCT&quot;,
@@ -1157,11 +1173,11 @@ macrophage_merged &lt;- PrepSCTFindMarkers(macrophage_merged)</code></pre>
 <pre><code>Calculating cluster 0</code></pre>
 <pre><code>Calculating cluster 1</code></pre>
 <pre><code>Calculating cluster 2</code></pre>
+<pre><code>Warning in FindMarkers.default(object = data.use, cells.1 = cells.1, cells.2 =
+cells.2, : No features pass logfc.threshold threshold; returning empty
+data.frame</code></pre>
 <pre><code>Calculating cluster 3</code></pre>
 <pre><code>Calculating cluster 4</code></pre>
-<pre><code>Calculating cluster 5</code></pre>
-<pre><code>Calculating cluster 6</code></pre>
-<pre><code>Calculating cluster 7</code></pre>
 <pre class="r"><code>Markers_top10 &lt;- as.data.frame(Markers %&gt;% group_by(cluster) %&gt;% top_n(n = 10, wt = avg_log2FC))
 Markers_top3 &lt;- as.data.frame(Markers %&gt;% group_by(cluster) %&gt;% top_n(n = 3, wt = avg_log2FC))
 
@@ -1171,22 +1187,21 @@ Markers_top3 &lt;- as.data.frame(Markers %&gt;% group_by(cluster) %&gt;% top_n(n
 Markers_top10 %&gt;% 
   filter(cluster == &quot;0&quot;) %&gt;% 
   pull(gene)</code></pre>
-<pre><code> [1] &quot;F13A1&quot;   &quot;NAV2&quot;    &quot;PDGFC&quot;   &quot;PDE4D&quot;   &quot;RBPJ&quot;    &quot;SCN9A&quot;   &quot;MAMDC2&quot; 
- [8] &quot;ME1&quot;     &quot;FGF13&quot;   &quot;CCDC141&quot;</code></pre>
+<pre><code> [1] &quot;F13A1&quot;   &quot;NAV2&quot;    &quot;RBPJ&quot;    &quot;PDE4D&quot;   &quot;PDGFC&quot;   &quot;FGF13&quot;   &quot;SCN9A&quot;  
+ [8] &quot;CD163L1&quot; &quot;LGMN&quot;    &quot;ME1&quot;    </code></pre>
 <pre class="r"><code># the to 10 genes of cluster 1:
 
 Markers_top10 %&gt;% 
   filter(cluster == &quot;1&quot;) %&gt;% 
   pull(gene)</code></pre>
-<pre><code> [1] &quot;AOAH&quot;     &quot;CD74&quot;     &quot;CIITA&quot;    &quot;ANKRD44&quot;  &quot;PLXDC2&quot;   &quot;ADAM28&quot;  
- [7] &quot;HLA-DRB1&quot; &quot;RTN1&quot;     &quot;DOCK10&quot;   &quot;DOCK5&quot;   </code></pre>
+<pre><code> [1] &quot;AOAH&quot;    &quot;PLXDC2&quot;  &quot;ANKRD44&quot; &quot;SSH2&quot;    &quot;SIPA1L1&quot; &quot;PTPRC&quot;   &quot;DOCK8&quot;  
+ [8] &quot;CD74&quot;    &quot;MYO1F&quot;   &quot;IRAK3&quot;  </code></pre>
 <pre class="r"><code># the to 10 genes of cluster 2:
 
 Markers_top10 %&gt;% 
   filter(cluster == &quot;2&quot;) %&gt;% 
   pull(gene)</code></pre>
-<pre><code> [1] &quot;NAMPT&quot;    &quot;ACSL1&quot;    &quot;SLC16A10&quot; &quot;BCL2&quot;     &quot;CD44&quot;     &quot;PPARD&quot;   
- [7] &quot;THBS1&quot;    &quot;LITAF&quot;    &quot;SAMSN1&quot;   &quot;ALCAM&quot;   </code></pre>
+<pre><code>character(0)</code></pre>
 <div id="scores" class="section level2">
 <h2>Scores</h2>
 <div id="resident-macrophages-score" class="section level3">
@@ -1221,12 +1236,12 @@ seurat_obj &lt;- AddModuleScore_UCell(
 score_col &lt;- paste0(score_name, &quot;_UCell&quot;)
 
 # Set up comparison groups &amp; colors
-comp &lt;- c(&quot;NC&quot;, &quot;TGF_B&quot;)
-comp_colors &lt;- c(&quot;NC&quot; = &quot;#005EA8&quot;, &quot;TGF_B&quot; = &quot;#9F1C67&quot;)
+comp &lt;- c(&quot;no_TGF&quot;, &quot;with_TGF&quot;)
+comp_colors &lt;- c(&quot;no_TGF&quot; = &quot;#005EA8&quot;, &quot;with_TGF&quot; = &quot;#9F1C67&quot;)
 
 
-seurat_obj &lt;- subset(seurat_obj, TGF_status %in% comp)
-seurat_obj$TGF_status &lt;- factor(seurat_obj$TGF_status, levels = comp)
+seurat_obj &lt;- subset(seurat_obj, condition %in% comp)
+seurat_obj$TGF_status &lt;- factor(seurat_obj$condition, levels = comp)
 
 
 plot_df &lt;- FetchData(seurat_obj, vars = c(score_col, &quot;TGF_status&quot;))
@@ -1402,17 +1417,16 @@ seurat_obj &lt;- AddModuleScore_UCell(
 score_col &lt;- paste0(score_name, &quot;_UCell&quot;)
 
 # Set up comparison groups &amp; colors
-comp &lt;- c(&quot;NC&quot;, &quot;TGF_B&quot;)
-comp_colors &lt;- c(&quot;NC&quot; = &quot;#005EA8&quot;, &quot;TGF_B&quot; = &quot;#9F1C67&quot;)
+comp &lt;- c(&quot;no_TGF&quot;, &quot;with_TGF&quot;)
+comp_colors &lt;- c(&quot;no_TGF&quot; = &quot;#005EA8&quot;, &quot;with_TGF&quot; = &quot;#9F1C67&quot;)
 
 
-seurat_obj &lt;- subset(seurat_obj, TGF_status %in% comp)
-seurat_obj$TGF_status &lt;- factor(seurat_obj$TGF_status, levels = comp)
+seurat_obj &lt;- subset(seurat_obj, condition %in% comp)
+seurat_obj$TGF_status &lt;- factor(seurat_obj$condition, levels = comp)
 
 
 plot_df &lt;- FetchData(seurat_obj, vars = c(score_col, &quot;TGF_status&quot;))
 colnames(plot_df) &lt;- c(&quot;Score&quot;, &quot;TGF_status&quot;)
-
 
 p_violin &lt;- ggplot(plot_df, aes(x = TGF_status, y = Score, fill = TGF_status)) +
   geom_violin(scale = &quot;width&quot;, trim = TRUE, alpha = 0.7, color = &quot;black&quot;) +
@@ -1574,12 +1588,12 @@ seurat_obj &lt;- AddModuleScore_UCell(
 score_col &lt;- paste0(score_name, &quot;_UCell&quot;)
 
 # Set up comparison groups &amp; colors
-comp &lt;- c(&quot;NC&quot;, &quot;TGF_B&quot;)
-comp_colors &lt;- c(&quot;NC&quot; = &quot;#005EA8&quot;, &quot;TGF_B&quot; = &quot;#9F1C67&quot;)
+comp &lt;- c(&quot;no_TGF&quot;, &quot;with_TGF&quot;)
+comp_colors &lt;- c(&quot;no_TGF&quot; = &quot;#005EA8&quot;, &quot;with_TGF&quot; = &quot;#9F1C67&quot;)
 
 
-seurat_obj &lt;- subset(seurat_obj, TGF_status %in% comp)
-seurat_obj$TGF_status &lt;- factor(seurat_obj$TGF_status, levels = comp)
+seurat_obj &lt;- subset(seurat_obj, condition %in% comp)
+seurat_obj$TGF_status &lt;- factor(seurat_obj$condition, levels = comp)
 
 
 plot_df &lt;- FetchData(seurat_obj, vars = c(score_col, &quot;TGF_status&quot;))
@@ -1713,6 +1727,354 @@ Sophie
 </table>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div id="check-diff.-in-disease-vs-hc" class="section level1">
+<h1>Check diff. in disease vs HC</h1>
+</div>
+<div id="import-rds-1" class="section level1">
+<h1>Import Rds</h1>
+<pre class="r"><code>################### MT-Data
+# path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated3_MT_Derived_sample.rds&quot;
+# macrophage_merged &lt;- read_rds(path)
+
+
+
+custom_palette &lt;- colorRampPalette(c(&quot;#005EA8&quot;, &quot;#6DB335&quot;, &quot;#FFD966&quot;, &quot;#EDAAD2&quot;, &quot;#9F1C67&quot;))
+cols2 &lt;- custom_palette(2)
+cols3 &lt;- custom_palette(3)
+cols4 &lt;- custom_palette(4)
+cols5 &lt;- custom_palette(5)
+cols6 &lt;- custom_palette(6)
+
+cols8 &lt;- custom_palette(8)
+
+cols10 &lt;- custom_palette(10)
+
+cols39 &lt;- custom_palette(39)</code></pre>
+</div>
+<div id="vizualisations-1" class="section level1">
+<h1>Vizualisations</h1>
+<pre class="r"><code>DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  group.by = &quot;SCT_snn_res.0.2&quot;,
+  cols = cols8,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle(&quot;Combined Macrophages SCT_snn_res.0.2&quot;) +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    plot.title = element_text(size = 14, face = &quot;bold&quot;, hjust = 0.5)
+  )</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  group.by = &quot;SCT_snn_res.0.3&quot;,
+  cols = cols10,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle(&quot;Combined Macrophages SCT_snn_res.0.3&quot;) +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    plot.title = element_text(size = 14, face = &quot;bold&quot;, hjust = 0.5)
+  )</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-13-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>Idents(macrophage_merged) &lt;- &quot;SCT_snn_res.0.2&quot;</code></pre>
+</div>
+<div id="proportions-across-the-conditions" class="section level1">
+<h1>Proportions across the conditions</h1>
+<pre class="r"><code>table(macrophage_merged$SCT_snn_res.0.2, macrophage_merged$condition)</code></pre>
+<pre><code>   
+      ACM   DCM    HC   HCM  LVCM no_TGF with_TGF
+  0  5525 37344 24837 10440   348    358       48
+  1  2640 20417 13919  6200   203    117      204
+  2  1065  7191  5688  2279   113     27       30
+  3   734  6018  6741  1734    52     70      111
+  4   718  5411  4576  2014    50     90       71</code></pre>
+<pre class="r"><code># Extract metadata for the MT dataset only
+meta &lt;- macrophage_merged@meta.data 
+
+# 3. Plot cluster distribution: Untreated vs. TGF-β treated
+ggplot(meta, aes(x = condition, fill = SCT_snn_res.0.2)) +
+  geom_bar(position = &quot;fill&quot;) +
+  theme_classic() +
+  scale_fill_manual(values = cols8) +
+  labs(y = &quot;Proportion of Cells&quot;, x = &quot;MT TGF_status&quot;, title = &quot;Shift in Integrated Clusters (+/- TGFb)&quot;)</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="knn-reference-to-see-which-conditions-are-closest-in-the-space"
+class="section level1">
+<h1>kNN Reference to see which conditions are closest in the space</h1>
+<pre class="r"><code>library(Seurat)
+library(FNN)       
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Define labels and metadata column name
+cond_col         &lt;- &quot;condition&quot;  
+ref_conditions   &lt;- c(&quot;HC&quot;, &quot;ACM&quot;, &quot;DCM&quot;, &quot;HCM&quot;, &quot;LVCM&quot;)
+query_conditions &lt;- c(&quot;no_TGF&quot;, &quot;with_TGF&quot;)
+
+# Extract Harmony Embeddings (top 20 dimensions)
+harmony_embeds &lt;- Embeddings(macrophage_merged, reduction = &quot;harmony&quot;)[, 1:20]
+
+# Split cell IDs into Reference and Query sets
+meta_data   &lt;- macrophage_merged@meta.data
+ref_cells   &lt;- rownames(meta_data[meta_data[[cond_col]] %in% ref_conditions, ])
+query_cells &lt;- rownames(meta_data[meta_data[[cond_col]] %in% query_conditions, ])
+
+ref_embeds   &lt;- harmony_embeds[ref_cells, ]
+query_embeds &lt;- harmony_embeds[query_cells, ]
+ref_labels   &lt;- meta_data[ref_cells, cond_col]
+
+# Query k-Nearest Neighbors
+k &lt;- 20
+knn_out &lt;- get.knnx(data = ref_embeds, query = query_embeds, k = k)
+
+#  Map index matrix to reference labels
+neighbor_matrix &lt;- matrix(ref_labels[knn_out$nn.index], nrow = length(query_cells), ncol = k)
+
+#  Compute proportion of each reference state dynamically for every query cell
+prop_list &lt;- lapply(ref_conditions, function(cond) {
+  rowMeans(neighbor_matrix == cond)
+})
+names(prop_list) &lt;- paste0(&quot;prop_&quot;, ref_conditions)
+
+# Combine into a metadata dataframe
+knn_results &lt;- data.frame(
+  cell_id   = query_cells,
+  condition = meta_data[query_cells, cond_col],
+  as.data.frame(prop_list)
+)
+
+# Store proportions back into the Seurat object
+for (cond in ref_conditions) {
+  col_name &lt;- paste0(&quot;prop_&quot;, cond)
+  macrophage_merged@meta.data[[col_name]] &lt;- NA
+  macrophage_merged@meta.data[knn_results$cell_id, col_name] &lt;- knn_results[[col_name]]
+}
+
+# Visualize Proportions
+plot_df &lt;- knn_results %&gt;%
+  pivot_longer(cols = starts_with(&quot;prop_&quot;), names_to = &quot;Ref_State&quot;, values_to = &quot;Proportion&quot;) %&gt;%
+  mutate(Ref_State = gsub(&quot;prop_&quot;, &quot;&quot;, Ref_State)) %&gt;%
+  mutate(Ref_State = factor(Ref_State, levels = ref_conditions))
+
+# Color palette for 5 reference conditions
+ref_colors &lt;- c(&quot;HC&quot;   = &quot;#005EA8&quot;, 
+                &quot;ACM&quot;  = &quot;#6DB335&quot;, 
+                &quot;DCM&quot;  = &quot;#FFD966&quot;, 
+                &quot;HCM&quot;  = &quot;#EDAAD2&quot;, 
+                &quot;LVCM&quot; = &quot;#9F1C67&quot;)
+
+ggplot(plot_df, aes(x = condition, y = Proportion, fill = Ref_State)) +
+  geom_boxplot(outlier.size = 0.1, alpha = 0.8) +
+  theme_classic() +
+  scale_fill_manual(values = ref_colors) +
+  labs(
+    title = &quot;kNN Reference Neighborhood Proportions (k = 20)&quot;,
+    x     = &quot;Query Condition&quot;,
+    y     = &quot;Proportion of 20-NN Reference Neighbors&quot;,
+    fill  = &quot;Reference Condition&quot;
+  )</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="differential-gene-expression-correlation"
+class="section level1">
+<h1>Differential Gene Expression Correlation</h1>
+<pre class="r"><code>macrophage_only &lt;- subset(macrophage_merged, macrophage_merged$cell_statesL1 == &quot;Macrophage&quot;)
+
+rna_counts &lt;- GetAssayData(macrophage_only, assay = &quot;RNA&quot;, layer = &quot;counts&quot;)
+macrophage_only[[&quot;RNA&quot;]] &lt;- CreateAssayObject(counts = rna_counts, v3.assay = TRUE)</code></pre>
+<pre><code>Warning: Assay RNA changing from Assay5 to Assay</code></pre>
+<pre class="r"><code># 2. Re-run log-normalization across the unified matrix
+macrophage_only &lt;- NormalizeData(macrophage_only)
+
+# Reset Default Assay and Idents
+DefaultAssay(macrophage_only) &lt;- &quot;RNA&quot;
+Idents(macrophage_only)       &lt;- &quot;condition&quot;
+
+# Run Query DEG Comparison 1 
+#(we want to see whether the difference of DEGs in the microtissue correlates to the DEG of the other groups)
+
+deg_TGFb &lt;- FindMarkers(macrophage_only, ident.1 = &quot;with_TGF&quot;, ident.2 = &quot;no_TGF&quot;, min.pct = 0.1, logfc.threshold = 0)
+#deg_noTGFb &lt;- FindMarkers(macrophage_only, ident.1 = &quot;no_TGF&quot;, ident.2 = &quot;HC&quot;, min.pct = 0.1, logfc.threshold = 0)
+
+# Run Reference Disease DEG Comparisons (vs Healthy Control)
+deg_ACM  &lt;- FindMarkers(macrophage_only, ident.1 = &quot;ACM&quot;,  ident.2 = &quot;HC&quot;, min.pct = 0.1, logfc.threshold = 0)
+deg_DCM  &lt;- FindMarkers(macrophage_only, ident.1 = &quot;DCM&quot;,  ident.2 = &quot;HC&quot;, min.pct = 0.1, logfc.threshold = 0)
+deg_HCM  &lt;- FindMarkers(macrophage_only, ident.1 = &quot;HCM&quot;,  ident.2 = &quot;HC&quot;, min.pct = 0.1, logfc.threshold = 0)
+deg_LVCM &lt;- FindMarkers(macrophage_only, ident.1 = &quot;LVCM&quot;, ident.2 = &quot;HC&quot;, min.pct = 0.1, logfc.threshold = 0)
+
+
+
+# Select shared variable genes or union of top DEGs across comparisons
+top_sig_genes &lt;- unique(c(
+  rownames(subset(deg_TGFb, p_val_adj &lt; 0.01 &amp; abs(avg_log2FC) &gt; 0.5)),
+  rownames(subset(deg_ACM, p_val_adj &lt; 0.01 &amp; abs(avg_log2FC) &gt; 0.5)),
+  rownames(subset(deg_HCM, p_val_adj &lt; 0.01 &amp; abs(avg_log2FC) &gt; 0.5)),
+  rownames(subset(deg_LVCM, p_val_adj &lt; 0.01 &amp; abs(avg_log2FC) &gt; 0.5)),
+  rownames(subset(deg_DCM, p_val_adj &lt; 0.01 &amp; abs(avg_log2FC) &gt; 0.5))
+))
+
+# Build log2FC dataframe across shared genes
+log2fc_df &lt;- data.frame(
+  Gene     = top_sig_genes,
+  TGFb     = deg_TGFb[top_sig_genes, &quot;avg_log2FC&quot;],
+  ACM      = deg_ACM[top_sig_genes, &quot;avg_log2FC&quot;],
+  DCM      = deg_DCM[top_sig_genes, &quot;avg_log2FC&quot;],
+  HCM      = deg_HCM[top_sig_genes, &quot;avg_log2FC&quot;],
+  LVCM     = deg_LVCM[top_sig_genes, &quot;avg_log2FC&quot;]
+)
+
+# Remove rows with NA (genes not present in all test results)
+log2fc_clean &lt;- na.omit(log2fc_df)
+rownames(log2fc_clean) &lt;- log2fc_clean$Gene
+log2fc_mat &lt;- log2fc_clean[, -1]
+
+
+
+spearman_cor &lt;- cor(log2fc_mat, method = &quot;spearman&quot;)
+library(corrplot)</code></pre>
+<pre><code>corrplot 0.95 loaded</code></pre>
+<pre class="r"><code># Visualize Correlation Matrix
+corrplot(
+  spearman_cor, 
+  method = &quot;color&quot;, 
+  type = &quot;upper&quot;, 
+  addCoef.col = &quot;black&quot;, 
+  tl.col = &quot;black&quot;, 
+  tl.srt = 45,
+  title = &quot;Spearman Correlation of log2FC Profiles&quot;,
+  mar = c(0,0,2,0)
+)</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="pseudo-bulk-sample-distance-hierarchical-clustering"
+class="section level1">
+<h1>Pseudo-bulk Sample Distance &amp; Hierarchical Clustering</h1>
+<pre class="r"><code>library(Seurat)
+library(dplyr)
+library(pheatmap)</code></pre>
+<pre><code>
+Attaching package: &#39;pheatmap&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:ComplexHeatmap&#39;:
+
+    pheatmap</code></pre>
+<pre class="r"><code># Aggregate single-cell expression into pseudo-bulk profiles by condition
+pb_list &lt;- AggregateExpression(
+  macrophage_only, 
+  assays = &quot;RNA&quot;, 
+  return.seurat = FALSE, 
+  group.by = &quot;condition&quot;
+)</code></pre>
+<pre><code>Names of identity class contain underscores (&#39;_&#39;), replacing with dashes (&#39;-&#39;)
+This message is displayed once every 8 hours.</code></pre>
+<pre class="r"><code># Extract RNA and convert sparse matrix to standard dense R matrix
+pb_raw &lt;- as.matrix(pb_list$RNA)
+
+# Ensure variable features are calculated and exist in the matrix
+hvgs &lt;- VariableFeatures(macrophage_only)
+if (length(hvgs) == 0) {
+  macrophage_only &lt;- FindVariableFeatures(macrophage_only, nfeatures = 2000)
+  hvgs &lt;- VariableFeatures(macrophage_only)
+}
+valid_hvgs &lt;- intersect(hvgs, rownames(pb_raw))
+
+# Log-normalize the pseudo-bulk matrix for variable genes
+pb_mat &lt;- log1p(pb_raw[valid_hvgs, ])
+
+# Compute Pearson correlation matrix across conditions
+cor_mat &lt;- cor(pb_mat, method = &quot;pearson&quot;)
+
+# Plot Hierarchical Clustering &amp; Heatmap
+pheatmap(
+  cor_mat, 
+  clustering_distance_rows = as.dist(1 - cor_mat),
+  clustering_distance_cols = as.dist(1 - cor_mat),
+  display_numbers = TRUE,
+  number_format = &quot;%.2f&quot;,
+  main = &quot;Pseudo-bulk Transcriptomic Pearson Correlation&quot;
+)</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="one-last-try---merging-all-disease-states-together"
+class="section level1">
+<h1>one last try - merging all disease states together</h1>
+<pre class="r"><code>table(macrophage_only@meta.data$condition)</code></pre>
+<pre><code>
+     ACM      DCM       HC      HCM     LVCM   no_TGF with_TGF 
+    7910    60860    45389    19848      552      662      464 </code></pre>
+<pre class="r"><code>disease_map &lt;- c(
+  &quot;ACM&quot; = &quot;Disease&quot;,
+  &quot;DCM&quot; = &quot;Disease&quot;,
+  &quot;HCM&quot; = &quot;Disease&quot;,
+  &quot;LVCM&quot; = &quot;Disease&quot;)
+
+
+clean_disease &lt;- trimws(macrophage_only$condition)
+macrophage_only$disease_state &lt;- ifelse(clean_disease %in% names(disease_map), 
+                                disease_map[clean_disease], 
+                                clean_disease)
+
+
+table(macrophage_only$disease_state)</code></pre>
+<pre><code>
+ Disease       HC   no_TGF with_TGF 
+   89170    45389      662      464 </code></pre>
+<pre class="r"><code>#####################
+
+# Aggregate single-cell expression into pseudo-bulk profiles by disease_state
+pb_list &lt;- AggregateExpression(
+  macrophage_only, 
+  assays = &quot;RNA&quot;, 
+  return.seurat = FALSE, 
+  group.by = &quot;disease_state&quot;
+)
+
+# Extract RNA and convert sparse matrix to standard dense R matrix
+pb_raw &lt;- as.matrix(pb_list$RNA)
+
+# Ensure variable features are calculated and exist in the matrix
+hvgs &lt;- VariableFeatures(macrophage_only)
+if (length(hvgs) == 0) {
+  macrophage_only &lt;- FindVariableFeatures(macrophage_only, nfeatures = 2000)
+  hvgs &lt;- VariableFeatures(macrophage_only)
+}
+valid_hvgs &lt;- intersect(hvgs, rownames(pb_raw))
+
+# Log-normalize the pseudo-bulk matrix for variable genes
+pb_mat &lt;- log1p(pb_raw[valid_hvgs, ])
+
+# Compute Pearson correlation matrix across conditions
+cor_mat &lt;- cor(pb_mat, method = &quot;pearson&quot;)
+
+# Plot Hierarchical Clustering &amp; Heatmap
+pheatmap(
+  cor_mat, 
+  clustering_distance_rows = as.dist(1 - cor_mat),
+  clustering_distance_cols = as.dist(1 - cor_mat),
+  display_numbers = TRUE,
+  number_format = &quot;%.2f&quot;,
+  main = &quot;Pseudo-bulk Transcriptomic Pearson Correlation&quot;
+)</code></pre>
+<p><img src="figure/Mac_Integrated_inspection.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1746,34 +2108,36 @@ attached base packages:
 [8] methods   base     
 
 other attached packages:
- [1] ggpubr_0.6.3                circlize_0.4.17            
- [3] lubridate_1.9.4             stringr_1.5.2              
- [5] purrr_1.2.2                 tidyr_1.3.1                
- [7] tidyverse_2.0.0             ComplexHeatmap_2.26.1      
- [9] ggrain_0.1.2                enrichplot_1.30.5          
-[11] ggforce_0.5.0               DT_0.34.0                  
-[13] UCell_2.14.0                assertthat_0.2.1           
-[15] SCpubr_3.0.1                forcats_1.0.1              
-[17] fgsea_1.36.2                DOSE_4.4.0                 
-[19] GO.db_3.22.0                org.Hs.eg.db_3.22.0        
-[21] AnnotationDbi_1.72.0        clusterProfiler_4.18.4     
-[23] ggtangle_0.1.2              ggarchery_0.4.4            
-[25] EnhancedVolcano_1.28.2      tibble_3.3.0               
-[27] MAST_1.36.0                 speckle_1.10.0             
-[29] harmony_1.2.4               Rcpp_1.1.0                 
-[31] clustree_0.5.1              ggraph_2.2.2               
-[33] scDblFinder_1.24.10         SingleCellExperiment_1.32.0
-[35] SummarizedExperiment_1.40.0 Biobase_2.70.0             
-[37] GenomicRanges_1.62.1        Seqinfo_1.0.0              
-[39] IRanges_2.44.0              S4Vectors_0.48.0           
-[41] BiocGenerics_0.56.0         generics_0.1.4             
-[43] MatrixGenerics_1.22.0       matrixStats_1.5.0          
-[45] ggrepel_0.9.6               cowplot_1.2.0              
-[47] patchwork_1.3.2             scCustomize_3.2.4          
-[49] hdf5r_1.3.12                Seurat_5.4.0               
-[51] SeuratObject_5.3.0          sp_2.2-0                   
-[53] ggplot2_4.0.0               dplyr_1.1.4                
-[55] readr_2.1.5                 workflowr_1.7.2            
+ [1] pheatmap_1.0.13             corrplot_0.95              
+ [3] FNN_1.1.4.1                 ggpubr_0.6.3               
+ [5] circlize_0.4.17             lubridate_1.9.4            
+ [7] stringr_1.5.2               purrr_1.2.2                
+ [9] tidyr_1.3.1                 tidyverse_2.0.0            
+[11] ComplexHeatmap_2.26.1       ggrain_0.1.2               
+[13] enrichplot_1.30.5           ggforce_0.5.0              
+[15] DT_0.34.0                   UCell_2.14.0               
+[17] assertthat_0.2.1            SCpubr_3.0.1               
+[19] forcats_1.0.1               fgsea_1.36.2               
+[21] DOSE_4.4.0                  GO.db_3.22.0               
+[23] org.Hs.eg.db_3.22.0         AnnotationDbi_1.72.0       
+[25] clusterProfiler_4.18.4      ggtangle_0.1.2             
+[27] ggarchery_0.4.4             EnhancedVolcano_1.28.2     
+[29] tibble_3.3.0                MAST_1.36.0                
+[31] speckle_1.10.0              harmony_1.2.4              
+[33] Rcpp_1.1.0                  clustree_0.5.1             
+[35] ggraph_2.2.2                scDblFinder_1.24.10        
+[37] SingleCellExperiment_1.32.0 SummarizedExperiment_1.40.0
+[39] Biobase_2.70.0              GenomicRanges_1.62.1       
+[41] Seqinfo_1.0.0               IRanges_2.44.0             
+[43] S4Vectors_0.48.0            BiocGenerics_0.56.0        
+[45] generics_0.1.4              MatrixGenerics_1.22.0      
+[47] matrixStats_1.5.0           workflowr_1.7.2            
+[49] ggrepel_0.9.6               cowplot_1.2.0              
+[51] patchwork_1.3.2             scCustomize_3.2.4          
+[53] hdf5r_1.3.12                Seurat_5.4.0               
+[55] SeuratObject_5.3.0          sp_2.2-0                   
+[57] ggplot2_4.0.0               dplyr_1.1.4                
+[59] readr_2.1.5                
 
 loaded via a namespace (and not attached):
   [1] R.methodsS3_1.8.2        ggpp_0.6.1               goftest_1.2-3           
@@ -1848,8 +2212,6 @@ loaded via a namespace (and not attached):
 [208] htmlwidgets_1.6.4        RColorBrewer_1.1-3       rlang_1.3.0             
 [211] spatstat.sparse_3.1-0    spatstat.explore_3.5-3   ggnewscale_0.5.2        
 [214] beeswarm_0.4.0          </code></pre>
-</div>
-</div>
 </div>
 </div>
 </div>
