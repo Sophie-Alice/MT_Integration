@@ -62,7 +62,7 @@ library(ggpubr)
 ```{r}
 
 ################### MT-Data
-path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated_MT_Derived_sample.rds"
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated3_MT_Derived_sample.rds"
 macrophage_merged <- read_rds(path)
 
 
@@ -132,11 +132,12 @@ Idents(macrophage_merged) <- "SCT_snn_res.0.2"
  
 ```{r}
 
+
 DimPlot(
   macrophage_merged,
   reduction = "umap",
   group.by = "SCT_snn_res.0.2",
-  split.by = "TGF_status",
+  split.by = "condition",
   cols = cols8,
   label = TRUE,
   repel = TRUE,
@@ -186,7 +187,7 @@ mt_meta <- macrophage_merged@meta.data %>%
   filter(Dataset == "MT_Data")
 
 # 3. Plot cluster distribution: Untreated vs. TGF-β treated
-ggplot(mt_meta, aes(x = TGF_status, fill = SCT_snn_res.0.2)) +
+ggplot(mt_meta, aes(x = condition, fill = SCT_snn_res.0.2)) +
   geom_bar(position = "fill") +
   theme_classic() +
   scale_fill_manual(values = cols8) +
@@ -203,7 +204,7 @@ Propeller is not possible because we have N = 1 per condition
  
 ```{r}
 # contingency table (Clusters x Condition)
-counts_table <- table(mt_meta$SCT_snn_res.0.2, mt_meta$TGF_status)
+counts_table <- table(mt_meta$SCT_snn_res.0.2, mt_meta$condition)
 print(counts_table)
 
 # Global test across all clusters
@@ -215,14 +216,14 @@ print(chisq_res)
 
 cluster_stats <- data.frame(
   Cluster = rownames(counts_table),
-  NC_Count = counts_table[, "NC"],
-  TGFb_Count = counts_table[, "TGF_B"],
+  NC_Count = counts_table[, "no_TGF"],
+  TGFb_Count = counts_table[, "with_TGF"],
   stringsAsFactors = FALSE
 )
 
 # Total cells per condition
-total_nc <- sum(counts_table[, "NC"])
-total_tgfb <- sum(counts_table[, "TGF_B"])
+total_nc <- sum(counts_table[, "no_TGF"])
+total_tgfb <- sum(counts_table[, "with_TGF"])
 
 # Run 2x2 Fisher's test per cluster
 cluster_stats <- cluster_stats %>%
@@ -331,12 +332,12 @@ seurat_obj <- AddModuleScore_UCell(
 score_col <- paste0(score_name, "_UCell")
 
 # Set up comparison groups & colors
-comp <- c("NC", "TGF_B")
-comp_colors <- c("NC" = "#005EA8", "TGF_B" = "#9F1C67")
+comp <- c("no_TGF", "with_TGF")
+comp_colors <- c("no_TGF" = "#005EA8", "with_TGF" = "#9F1C67")
 
 
-seurat_obj <- subset(seurat_obj, TGF_status %in% comp)
-seurat_obj$TGF_status <- factor(seurat_obj$TGF_status, levels = comp)
+seurat_obj <- subset(seurat_obj, condition %in% comp)
+seurat_obj$TGF_status <- factor(seurat_obj$condition, levels = comp)
 
 
 plot_df <- FetchData(seurat_obj, vars = c(score_col, "TGF_status"))
@@ -434,17 +435,16 @@ seurat_obj <- AddModuleScore_UCell(
 score_col <- paste0(score_name, "_UCell")
 
 # Set up comparison groups & colors
-comp <- c("NC", "TGF_B")
-comp_colors <- c("NC" = "#005EA8", "TGF_B" = "#9F1C67")
+comp <- c("no_TGF", "with_TGF")
+comp_colors <- c("no_TGF" = "#005EA8", "with_TGF" = "#9F1C67")
 
 
-seurat_obj <- subset(seurat_obj, TGF_status %in% comp)
-seurat_obj$TGF_status <- factor(seurat_obj$TGF_status, levels = comp)
+seurat_obj <- subset(seurat_obj, condition %in% comp)
+seurat_obj$TGF_status <- factor(seurat_obj$condition, levels = comp)
 
 
 plot_df <- FetchData(seurat_obj, vars = c(score_col, "TGF_status"))
 colnames(plot_df) <- c("Score", "TGF_status")
-
 
 p_violin <- ggplot(plot_df, aes(x = TGF_status, y = Score, fill = TGF_status)) +
   geom_violin(scale = "width", trim = TRUE, alpha = 0.7, color = "black") +
@@ -536,12 +536,12 @@ seurat_obj <- AddModuleScore_UCell(
 score_col <- paste0(score_name, "_UCell")
 
 # Set up comparison groups & colors
-comp <- c("NC", "TGF_B")
-comp_colors <- c("NC" = "#005EA8", "TGF_B" = "#9F1C67")
+comp <- c("no_TGF", "with_TGF")
+comp_colors <- c("no_TGF" = "#005EA8", "with_TGF" = "#9F1C67")
 
 
-seurat_obj <- subset(seurat_obj, TGF_status %in% comp)
-seurat_obj$TGF_status <- factor(seurat_obj$TGF_status, levels = comp)
+seurat_obj <- subset(seurat_obj, condition %in% comp)
+seurat_obj$TGF_status <- factor(seurat_obj$condition, levels = comp)
 
 
 plot_df <- FetchData(seurat_obj, vars = c(score_col, "TGF_status"))
@@ -604,36 +604,346 @@ print(p_split)
 
 ```
 
+# Check diff. in disease vs  HC
+
+# Import Rds
+
 ```{r}
+
+################### MT-Data
+# path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_Integrated3_MT_Derived_sample.rds"
+# macrophage_merged <- read_rds(path)
+
+
+
+custom_palette <- colorRampPalette(c("#005EA8", "#6DB335", "#FFD966", "#EDAAD2", "#9F1C67"))
+cols2 <- custom_palette(2)
+cols3 <- custom_palette(3)
+cols4 <- custom_palette(4)
+cols5 <- custom_palette(5)
+cols6 <- custom_palette(6)
+
+cols8 <- custom_palette(8)
+
+cols10 <- custom_palette(10)
+
+cols39 <- custom_palette(39)
+```
+
+# Vizualisations
+
+```{r}
+DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.2",
+  cols = cols8,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Combined Macrophages SCT_snn_res.0.2") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.3",
+  cols = cols10,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Combined Macrophages SCT_snn_res.0.3") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+Idents(macrophage_merged) <- "SCT_snn_res.0.2"
+
+```
+
+
+# Proportions across the conditions
+
+```{r}
+table(macrophage_merged$SCT_snn_res.0.2, macrophage_merged$condition)
+
+# Extract metadata for the MT dataset only
+meta <- macrophage_merged@meta.data 
+
+# 3. Plot cluster distribution: Untreated vs. TGF-β treated
+ggplot(meta, aes(x = condition, fill = SCT_snn_res.0.2)) +
+  geom_bar(position = "fill") +
+  theme_classic() +
+  scale_fill_manual(values = cols8) +
+  labs(y = "Proportion of Cells", x = "MT TGF_status", title = "Shift in Integrated Clusters (+/- TGFb)")
 
 
 
 ```
 
+# kNN Reference to see which conditions are closest in the space
+
 ```{r}
+library(Seurat)
+library(FNN)       
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 
+# Define labels and metadata column name
+cond_col         <- "condition"  
+ref_conditions   <- c("HC", "ACM", "DCM", "HCM", "LVCM")
+query_conditions <- c("no_TGF", "with_TGF")
 
+# Extract Harmony Embeddings (top 20 dimensions)
+harmony_embeds <- Embeddings(macrophage_merged, reduction = "harmony")[, 1:20]
+
+# Split cell IDs into Reference and Query sets
+meta_data   <- macrophage_merged@meta.data
+ref_cells   <- rownames(meta_data[meta_data[[cond_col]] %in% ref_conditions, ])
+query_cells <- rownames(meta_data[meta_data[[cond_col]] %in% query_conditions, ])
+
+ref_embeds   <- harmony_embeds[ref_cells, ]
+query_embeds <- harmony_embeds[query_cells, ]
+ref_labels   <- meta_data[ref_cells, cond_col]
+
+# Query k-Nearest Neighbors
+k <- 20
+knn_out <- get.knnx(data = ref_embeds, query = query_embeds, k = k)
+
+#  Map index matrix to reference labels
+neighbor_matrix <- matrix(ref_labels[knn_out$nn.index], nrow = length(query_cells), ncol = k)
+
+#  Compute proportion of each reference state dynamically for every query cell
+prop_list <- lapply(ref_conditions, function(cond) {
+  rowMeans(neighbor_matrix == cond)
+})
+names(prop_list) <- paste0("prop_", ref_conditions)
+
+# Combine into a metadata dataframe
+knn_results <- data.frame(
+  cell_id   = query_cells,
+  condition = meta_data[query_cells, cond_col],
+  as.data.frame(prop_list)
+)
+
+# Store proportions back into the Seurat object
+for (cond in ref_conditions) {
+  col_name <- paste0("prop_", cond)
+  macrophage_merged@meta.data[[col_name]] <- NA
+  macrophage_merged@meta.data[knn_results$cell_id, col_name] <- knn_results[[col_name]]
+}
+
+# Visualize Proportions
+plot_df <- knn_results %>%
+  pivot_longer(cols = starts_with("prop_"), names_to = "Ref_State", values_to = "Proportion") %>%
+  mutate(Ref_State = gsub("prop_", "", Ref_State)) %>%
+  mutate(Ref_State = factor(Ref_State, levels = ref_conditions))
+
+# Color palette for 5 reference conditions
+ref_colors <- c("HC"   = "#005EA8", 
+                "ACM"  = "#6DB335", 
+                "DCM"  = "#FFD966", 
+                "HCM"  = "#EDAAD2", 
+                "LVCM" = "#9F1C67")
+
+ggplot(plot_df, aes(x = condition, y = Proportion, fill = Ref_State)) +
+  geom_boxplot(outlier.size = 0.1, alpha = 0.8) +
+  theme_classic() +
+  scale_fill_manual(values = ref_colors) +
+  labs(
+    title = "kNN Reference Neighborhood Proportions (k = 20)",
+    x     = "Query Condition",
+    y     = "Proportion of 20-NN Reference Neighbors",
+    fill  = "Reference Condition"
+  )
 ```
 
+# Differential Gene Expression Correlation
+
 ```{r}
 
+macrophage_only <- subset(macrophage_merged, macrophage_merged$cell_statesL1 == "Macrophage")
 
+rna_counts <- GetAssayData(macrophage_only, assay = "RNA", layer = "counts")
+macrophage_only[["RNA"]] <- CreateAssayObject(counts = rna_counts, v3.assay = TRUE)
+
+# 2. Re-run log-normalization across the unified matrix
+macrophage_only <- NormalizeData(macrophage_only)
+
+# Reset Default Assay and Idents
+DefaultAssay(macrophage_only) <- "RNA"
+Idents(macrophage_only)       <- "condition"
+
+# Run Query DEG Comparison 1 
+#(we want to see whether the difference of DEGs in the microtissue correlates to the DEG of the other groups)
+
+deg_TGFb <- FindMarkers(macrophage_only, ident.1 = "with_TGF", ident.2 = "no_TGF", min.pct = 0.1, logfc.threshold = 0)
+#deg_noTGFb <- FindMarkers(macrophage_only, ident.1 = "no_TGF", ident.2 = "HC", min.pct = 0.1, logfc.threshold = 0)
+
+# Run Reference Disease DEG Comparisons (vs Healthy Control)
+deg_ACM  <- FindMarkers(macrophage_only, ident.1 = "ACM",  ident.2 = "HC", min.pct = 0.1, logfc.threshold = 0)
+deg_DCM  <- FindMarkers(macrophage_only, ident.1 = "DCM",  ident.2 = "HC", min.pct = 0.1, logfc.threshold = 0)
+deg_HCM  <- FindMarkers(macrophage_only, ident.1 = "HCM",  ident.2 = "HC", min.pct = 0.1, logfc.threshold = 0)
+deg_LVCM <- FindMarkers(macrophage_only, ident.1 = "LVCM", ident.2 = "HC", min.pct = 0.1, logfc.threshold = 0)
+
+
+
+# Select shared variable genes or union of top DEGs across comparisons
+top_sig_genes <- unique(c(
+  rownames(subset(deg_TGFb, p_val_adj < 0.01 & abs(avg_log2FC) > 0.5)),
+  rownames(subset(deg_ACM, p_val_adj < 0.01 & abs(avg_log2FC) > 0.5)),
+  rownames(subset(deg_HCM, p_val_adj < 0.01 & abs(avg_log2FC) > 0.5)),
+  rownames(subset(deg_LVCM, p_val_adj < 0.01 & abs(avg_log2FC) > 0.5)),
+  rownames(subset(deg_DCM, p_val_adj < 0.01 & abs(avg_log2FC) > 0.5))
+))
+
+# Build log2FC dataframe across shared genes
+log2fc_df <- data.frame(
+  Gene     = top_sig_genes,
+  TGFb     = deg_TGFb[top_sig_genes, "avg_log2FC"],
+  ACM      = deg_ACM[top_sig_genes, "avg_log2FC"],
+  DCM      = deg_DCM[top_sig_genes, "avg_log2FC"],
+  HCM      = deg_HCM[top_sig_genes, "avg_log2FC"],
+  LVCM     = deg_LVCM[top_sig_genes, "avg_log2FC"]
+)
+
+# Remove rows with NA (genes not present in all test results)
+log2fc_clean <- na.omit(log2fc_df)
+rownames(log2fc_clean) <- log2fc_clean$Gene
+log2fc_mat <- log2fc_clean[, -1]
+
+
+
+spearman_cor <- cor(log2fc_mat, method = "spearman")
+library(corrplot)
+# Visualize Correlation Matrix
+corrplot(
+  spearman_cor, 
+  method = "color", 
+  type = "upper", 
+  addCoef.col = "black", 
+  tl.col = "black", 
+  tl.srt = 45,
+  title = "Spearman Correlation of log2FC Profiles",
+  mar = c(0,0,2,0)
+)
 ```
 
+# Pseudo-bulk Sample Distance & Hierarchical Clustering
+
 ```{r}
+library(Seurat)
+library(dplyr)
+library(pheatmap)
 
+# Aggregate single-cell expression into pseudo-bulk profiles by condition
+pb_list <- AggregateExpression(
+  macrophage_only, 
+  assays = "RNA", 
+  return.seurat = FALSE, 
+  group.by = "condition"
+)
 
+# Extract RNA and convert sparse matrix to standard dense R matrix
+pb_raw <- as.matrix(pb_list$RNA)
+
+# Ensure variable features are calculated and exist in the matrix
+hvgs <- VariableFeatures(macrophage_only)
+if (length(hvgs) == 0) {
+  macrophage_only <- FindVariableFeatures(macrophage_only, nfeatures = 2000)
+  hvgs <- VariableFeatures(macrophage_only)
+}
+valid_hvgs <- intersect(hvgs, rownames(pb_raw))
+
+# Log-normalize the pseudo-bulk matrix for variable genes
+pb_mat <- log1p(pb_raw[valid_hvgs, ])
+
+# Compute Pearson correlation matrix across conditions
+cor_mat <- cor(pb_mat, method = "pearson")
+
+# Plot Hierarchical Clustering & Heatmap
+pheatmap(
+  cor_mat, 
+  clustering_distance_rows = as.dist(1 - cor_mat),
+  clustering_distance_cols = as.dist(1 - cor_mat),
+  display_numbers = TRUE,
+  number_format = "%.2f",
+  main = "Pseudo-bulk Transcriptomic Pearson Correlation"
+)
 ```
 
-```{r}
-
-
-```
-
+# one last try - merging all disease states together
 
 ```{r}
+table(macrophage_only@meta.data$condition)
+
+disease_map <- c(
+  "ACM" = "Disease",
+  "DCM" = "Disease",
+  "HCM" = "Disease",
+  "LVCM" = "Disease")
 
 
+clean_disease <- trimws(macrophage_only$condition)
+macrophage_only$disease_state <- ifelse(clean_disease %in% names(disease_map), 
+                                disease_map[clean_disease], 
+                                clean_disease)
+
+
+table(macrophage_only$disease_state)
+
+
+#####################
+
+# Aggregate single-cell expression into pseudo-bulk profiles by disease_state
+pb_list <- AggregateExpression(
+  macrophage_only, 
+  assays = "RNA", 
+  return.seurat = FALSE, 
+  group.by = "disease_state"
+)
+
+# Extract RNA and convert sparse matrix to standard dense R matrix
+pb_raw <- as.matrix(pb_list$RNA)
+
+# Ensure variable features are calculated and exist in the matrix
+hvgs <- VariableFeatures(macrophage_only)
+if (length(hvgs) == 0) {
+  macrophage_only <- FindVariableFeatures(macrophage_only, nfeatures = 2000)
+  hvgs <- VariableFeatures(macrophage_only)
+}
+valid_hvgs <- intersect(hvgs, rownames(pb_raw))
+
+# Log-normalize the pseudo-bulk matrix for variable genes
+pb_mat <- log1p(pb_raw[valid_hvgs, ])
+
+# Compute Pearson correlation matrix across conditions
+cor_mat <- cor(pb_mat, method = "pearson")
+
+# Plot Hierarchical Clustering & Heatmap
+pheatmap(
+  cor_mat, 
+  clustering_distance_rows = as.dist(1 - cor_mat),
+  clustering_distance_cols = as.dist(1 - cor_mat),
+  display_numbers = TRUE,
+  number_format = "%.2f",
+  main = "Pseudo-bulk Transcriptomic Pearson Correlation"
+)
 ```
 
 ```{r}
