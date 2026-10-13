@@ -606,7 +606,7 @@ print(p_split)
 
 # Check diff. in disease vs  HC
 
-# Import Rds
+## Import Rds
 
 ```{r}
 
@@ -630,7 +630,7 @@ cols10 <- custom_palette(10)
 cols39 <- custom_palette(39)
 ```
 
-# Vizualisations
+## Vizualisations
 
 ```{r}
 DimPlot(
@@ -676,7 +676,7 @@ Idents(macrophage_merged) <- "SCT_snn_res.0.2"
 ```
 
 
-# Proportions across the conditions
+## Proportions across the conditions
 
 ```{r}
 table(macrophage_merged$SCT_snn_res.0.2, macrophage_merged$condition)
@@ -695,7 +695,7 @@ ggplot(meta, aes(x = condition, fill = SCT_snn_res.0.2)) +
 
 ```
 
-# kNN Reference to see which conditions are closest in the space
+## kNN Reference to see which conditions are closest in the space
 
 ```{r}
 library(Seurat)
@@ -773,7 +773,7 @@ ggplot(plot_df, aes(x = condition, y = Proportion, fill = Ref_State)) +
   )
 ```
 
-# Differential Gene Expression Correlation
+## Differential Gene Expression Correlation across Disease groups
 
 ```{r}
 
@@ -844,7 +844,7 @@ corrplot(
 )
 ```
 
-# Pseudo-bulk Sample Distance & Hierarchical Clustering
+## Pseudo-bulk Sample Distance & Hierarchical Clustering
 
 ```{r}
 library(Seurat)
@@ -887,7 +887,7 @@ pheatmap(
 )
 ```
 
-# one last try - merging all disease states together
+## one last try - merging all disease states together
 
 ```{r}
 table(macrophage_only@meta.data$condition)
@@ -946,13 +946,275 @@ pheatmap(
 )
 ```
 
+## DEG across pseudo Subtypes
+
+ - Sadly turns out the UMAP was overfitted... 
+ - when correcting for the overfittedness our MT derived samples cluster separately
+ - meaning all that the calculated UMAP clusters are not biologically relevant
+ - the condition correlation resulted in no sign assignment of TFG-B sim macrophages to disease state
+ - the DGEA correlation showed no significant assignment to a disease state
+ - this is a last try to identify whether we can assign our MT to a disease state with transfer anchors
+
+```{r}
+table(macrophage_only$cell_statesL2)
+table(macrophage_only$cell_statesL2, macrophage_only$SCT_snn_res.0.2)
+
+# resident
+FeaturePlot_scCustom(
+  macrophage_merged, 
+  features = c("LYVE1","FOLR2", "MRC1", "IL1B","CXCL8", "CCL2","HLA-DRA","CD74", "HLA-DRB1")
+) 
+
+# inflamm
+FeaturePlot_scCustom(
+  macrophage_only, 
+  features = c("IL1B","CXCL8", "CCL2")
+) 
+
+# ag presenting
+FeaturePlot_scCustom(
+  macrophage_only, 
+  features = c("HLA-DRA","CD74", "HLA-DRB1")
+) 
+
+DimPlot(macrophage_merged, reduction = "umap", group.by = "Dataset")
+DimPlot(macrophage_merged, reduction = "umap", group.by = "method")
+
+```
+
+# subset of the non overfitted results
+
+
 ```{r}
 
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Mac_non_MT_Derived_sample.rds"
+macrophage_sub<- read_rds(path)
+
+
+DimPlot(
+  macrophage_sub,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.2",
+  split.by = "condition",
+  cols = cols8,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Subset Macrophages SCT_snn_res.0.2") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+```
+
+# Try transfer anchors
+
+## Anchor visualizations - per condition
+
+```{r}
+
+# Subset the merged object into Reference (Primary Tissue) and Query (Microtissue)
+ref_obj   <- subset(macrophage_merged, subset = Dataset != "MT_Data")
+query_obj <- subset(macrophage_merged, subset = Dataset == "MT_Data")
+
+# Ensure SCT assay and Variable Features are set on Reference
+DefaultAssay(ref_obj) <- "SCT"
+ref_obj <- RunPCA(ref_obj, verbose = FALSE)
+
+# Find Transfer Anchors between Primary Heart Reference and Microtissue Query
+anchors <- FindTransferAnchors(
+  reference         = ref_obj,
+  query             = query_obj,
+  normalization.method = "SCT",
+  reference.reduction  = "pca",
+  dims              = 1:15
+)
+
+#  Transfer Primary Condition labels onto Microtissue
+predictions <- TransferData(
+  anchorset   = anchors,
+  refdata     = ref_obj$condition, 
+  dims        = 1:15
+)
+
+# Add predicted labels and prediction scores to Query metadata
+query_obj <- AddMetaData(query_obj, metadata = predictions)
+
+# Evaluate prediction scores across TGF-beta conditions
+table(query_obj$condition, query_obj$predicted.id)
+
+```
+
+
+```{r}
+
+
+# Calculate percentage of each predicted state per condition
+prop_df <- query_obj@meta.data %>%
+  group_by(condition, predicted.id) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(condition) %>%
+  mutate(percentage = (count / sum(count)) * 100)
+
+# Stacked Bar Plot
+ggplot(prop_df, aes(x = condition, y = percentage, fill = predicted.id)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Set3") +
+  theme_classic(base_size = 14) +
+  labs(
+    title = "Shift in Predicted Disease states upon TGF-β Treatment",
+    x = "Microtissue Condition",
+    y = "Proportion of Cells",
+    fill = "Predicted Primary State"
+  )
+
+library(pheatmap)
+
+# Select all prediction score columns
+score_cols <- grep("^prediction\\.score\\.", colnames(query_obj@meta.data), value = TRUE)
+score_cols <- setdiff(score_cols, "prediction.score.max") # exclude max summary column
+
+# Calculate average score per condition
+mean_scores <- query_obj@meta.data %>%
+  group_by(condition) %>%
+  summarise(across(all_of(score_cols), mean)) %>%
+  tibble::column_to_rownames("condition")
+
+# Clean column names for readability
+colnames(mean_scores) <- gsub("prediction\\.score\\.", "", colnames(mean_scores))
+
+# Plot Heatmap
+pheatmap(
+  t(mean_scores),
+  cluster_rows = TRUE,
+  cluster_cols = FALSE,
+  display_numbers = TRUE,
+  number_format = "%.3f",
+  color = colorRampPalette(c("white", "orange", "darkred"))(50),
+  main = "Mean State Assignment Probabilities by Condition"
+)
+
+
+```
+
+
+## Anchor visualizations - per cellstate
+
+```{r}
+
+# Subset the merged object into Reference (Primary Tissue) and Query (Microtissue)
+ref_obj   <- subset(macrophage_merged, subset = Dataset != "MT_Data")
+query_obj <- subset(macrophage_merged, subset = Dataset == "MT_Data")
+
+# Ensure SCT assay and Variable Features are set on Reference
+DefaultAssay(ref_obj) <- "SCT"
+ref_obj <- RunPCA(ref_obj, verbose = FALSE)
+
+# Find Transfer Anchors between Primary Heart Reference and Microtissue Query
+anchors <- FindTransferAnchors(
+  reference         = ref_obj,
+  query             = query_obj,
+  normalization.method = "SCT",
+  reference.reduction  = "pca",
+  dims              = 1:15
+)
+#  Transfer Primary Condition labels onto Microtissue
+predictions <- TransferData(
+  anchorset   = anchors,
+  refdata     = ref_obj$cell_statesL2, 
+  dims        = 1:15
+)
+
+# Add predicted labels and prediction scores to Query metadata
+query_obj <- AddMetaData(query_obj, metadata = predictions)
+
+# Evaluate prediction scores across TGF-beta conditions
+table(query_obj$condition, query_obj$predicted.id)
+
+```
+
+
+```{r}
+
+
+# Calculate percentage of each predicted state per condition
+prop_df <- query_obj@meta.data %>%
+  group_by(condition, predicted.id) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(condition) %>%
+  mutate(percentage = (count / sum(count)) * 100)
+
+# Stacked Bar Plot
+ggplot(prop_df, aes(x = condition, y = percentage, fill = predicted.id)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Set3") +
+  theme_classic(base_size = 14) +
+  labs(
+    title = "Shift in Predicted Primary Cell States upon TGF-β Treatment",
+    x = "Microtissue Condition",
+    y = "Proportion of Cells",
+    fill = "Predicted Primary State"
+  )
+
+
+# Select all prediction score columns
+score_cols <- grep("^prediction\\.score\\.", colnames(query_obj@meta.data), value = TRUE)
+score_cols <- setdiff(score_cols, "prediction.score.max") # exclude max summary column
+
+# Calculate average score per condition
+mean_scores <- query_obj@meta.data %>%
+  group_by(condition) %>%
+  summarise(across(all_of(score_cols), mean)) %>%
+  tibble::column_to_rownames("condition")
+
+# Clean column names for readability
+colnames(mean_scores) <- gsub("prediction\\.score\\.", "", colnames(mean_scores))
+# Keep only scores corresponding to assigned cell states
+active_scores <- mean_scores[, unique(query_obj$predicted.id)]
+
+pheatmap(
+  t(active_scores),
+  cluster_rows = TRUE,
+  cluster_cols = FALSE,
+  display_numbers = TRUE,
+  number_format = "%.3f",
+  color = colorRampPalette(c("white", "orange", "darkred"))(50),
+  main = "Mean Assignment Probabilities (Active Predicted States)"
+)
+
+
+```
+```{r}
 
 ```
 
 ```{r}
 
+```
+
+```{r}
 
 ```
 
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
