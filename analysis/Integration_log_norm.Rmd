@@ -1,0 +1,442 @@
+---
+title: "Integration_log_norm"
+author: "Sophie"
+date: "2026-10-22"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: inline
+---
+
+# Setup
+
+```{r, message=FALSE, warning = FALSE}
+rm(list=ls())
+gc()
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(Seurat)
+library(hdf5r)
+library(scCustomize)
+library(patchwork)
+library(cowplot)
+library(ggrepel)
+library(workflowr)
+library(scDblFinder)
+library(clustree)
+library(harmony)
+library(speckle)
+library(MAST)
+library(tibble)
+library(EnhancedVolcano)
+
+library(ggarchery)
+library(ggtangle)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(GO.db)
+library(DOSE)
+library(fgsea)
+library(forcats)
+library(SCpubr)
+library(assertthat)
+library(UCell)
+library(DT)
+
+library(ggforce) 
+library(enrichplot)
+library(ggrain)
+library(ComplexHeatmap)
+library(tidyverse)
+library(circlize)
+
+library(ggpubr)
+
+```
+
+
+
+# getting the merge to run on a small sample set
+
+```{r}
+outputdir <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/"
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/MT_data_small.rds"
+MT_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Chaffin_data_small.rds"
+Chaffin_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/DCM_data_small.rds"
+DCM_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Litvinukova_data_small.rds"
+Litvinukova_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Reichart_data_small.rds"
+Reichart_data <- read_rds(path)
+
+
+length(table(MT_data$sample))
+length(table(Chaffin_data$sample))
+length(table(DCM_data$sample))
+length(table(Litvinukova_data$sample))
+table(Litvinukova_data$condition)
+length(table(Reichart_data$sample))
+table(Reichart_data$condition)
+
+MT_data$tissue <- "MT"
+Chaffin_data$tissue <- "tissue"
+DCM_data$tissue <- "tissue"
+Litvinukova_data$tissue <- "tissue"
+Reichart_data$tissue <- "tissue"
+
+```
+
+# subsetting max 5 samples per dataset to test
+
+```{r}
+set.seed(42)
+
+#Pick up to n samples per object. method = "largest" stress-tests with your
+#biggest samples first (catches hangs/OOM fastest); "random" gives a more
+#§representative but less adversarial test.
+subset_max_samples <- function(obj, n = 2, method = c("largest", "random")) {
+  method <- match.arg(method)
+  stopifnot("sample" %in% colnames(obj@meta.data))
+
+  tab <- table(obj$sample)
+  tab <- tab[tab > 0]
+
+  chosen <- if (method == "largest") {
+    names(sort(tab, decreasing = TRUE))[seq_len(min(n, length(tab)))]
+  } else {
+    sample(names(tab), min(n, length(tab)))
+  }
+
+  message(sprintf("%-12s: %d -> %d samples | %d -> %d cells",
+                   unique(obj$Dataset), length(tab), length(chosen),
+                   ncol(obj), sum(tab[chosen])))
+
+  cells_keep <- colnames(obj)[obj$sample %in% chosen]
+  subset(obj, cells = cells_keep)
+}
+
+# apply to each loaded object
+# MT_data           <- subset_max_samples(MT_data,           n = 5, method = "random")
+# Chaffin_data       <- subset_max_samples(Chaffin_data,      n = 50, method = "random")
+# DCM_data           <- subset_max_samples(DCM_data,          n = 50, method = "random")
+# Litvinukova_data   <- subset_max_samples(Litvinukova_data,  n = 50, method = "random")
+# Reichart_data      <- subset_max_samples(Reichart_data,     n = 50, method = "random")
+
+
+``` 
+
+
+# Map the atlas then add MT
+
+# using log tranform
+
+```{r}
+
+
+common_genes_mac <- Reduce(
+  intersect,
+  list(
+    rownames(MT_data),
+    rownames(Reichart_data),
+    rownames(Chaffin_data),
+    rownames(Litvinukova_data),
+    rownames(DCM_data)
+  )
+)
+
+
+###################################### merge
+
+DefaultAssay(Reichart_data) <- "RNA"
+
+macrophage_merged_background <- merge(
+  x = Reichart_data,
+  y = list(Chaffin_data, Litvinukova_data, DCM_data, MT_data),
+  add.cell.ids = c("Reichart", "Chaffin", "Litvinukova", "DCM", "MT"),
+  project = "Merged_Macrophage_Atlas"
+)
+
+# Clean workspace memory
+rm(Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+macrophage_merged_background <- macrophage_merged_background[common_genes_mac, ]
+macrophage_merged_background
+table(macrophage_merged_background$sample)
+
+
+# Join RNA layers if split
+if (length(grep("^counts", Layers(macrophage_merged_background[["RNA"]]))) > 1) {
+  macrophage_merged_background[["RNA"]] <- JoinLayers(macrophage_merged_background[["RNA"]])
+}
+
+###################################### mrun log transform on background
+
+macrophage_merged_background <- NormalizeData(macrophage_merged_background)
+macrophage_merged_background <- FindVariableFeatures(macrophage_merged_background, selection.method = "vst", nfeatures = 2000)
+Features <- VariableFeatures(macrophage_merged_background)
+
+macrophage_merged_background <- ScaleData(macrophage_merged_background, features = Features, vars.to.regress = "percent.mt")
+
+###################################### PCA and Harmony
+ 
+
+pcs <- 20
+
+macrophage_merged_background <- RunPCA(macrophage_merged_background, npcs = 30, verbose = FALSE)
+
+macrophage_merged_background <- RunUMAP(macrophage_merged_background, reduction = "pca", dims = 1:pcs)
+
+DimPlot(macrophage_merged_background, reduction = "umap", group.by = c("Dataset", "condition"))
+
+# Group ONLY by Dataset to avoid stripping patient/disease variation
+
+macrophage_merged_harmony <- harmony::RunHarmony(
+  object           = macrophage_merged_background,
+  assay.use        = "RNA",
+  group.by.vars    = c("Dataset"),      
+  dims.use         = 1:pcs,             
+  plot_convergence = FALSE
+)
+
+macrophage_merged_harmony <- RunUMAP(macrophage_merged_harmony, reduction = "harmony",
+  return.model = TRUE, dims = 1:pcs)
+
+macrophage_merged_harmony <- FindNeighbors(macrophage_merged_harmony, reduction = "harmony", dims = 1:pcs)
+
+macrophage_merged_harmony <- FindClusters(macrophage_merged_harmony, resolution = 0.1)
+
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = c("Dataset", "condition"))
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = "RNA_snn_res.0.1")
+
+Data3D <- RunUMAP(
+  macrophage_merged_harmony, 
+  dims = 1:pcs,                
+  n.components = 3, reduction = "harmony",          # Generate 3 dimensions (UMAP_1, UMAP_2, UMAP_3)
+  reduction.name = "umap3d"
+)
+# Extract 3D UMAP embeddings and cell metadata
+umap3d_df <- data.frame(
+  Embeddings(Data3D, "umap3d"),
+  cluster = Data3D$RNA_snn_res.0.1,
+  Dataset = Data3D$Dataset,
+  condition = Data3D$condition
+)
+
+library(plotly)
+# Plot interactive 3D scatter plot
+plot_ly(
+  umap3d_df, 
+  x = ~umap3d_1, 
+  y = ~umap3d_2, 
+  z = ~umap3d_3, 
+  color = ~condition, 
+  type = "scatter3d", 
+  mode = "markers",
+  marker = list(size = 3, opacity = 0.8)
+) 
+
+
+
+```
+
+
+```{r}
+
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = c("Dataset", "condition"))
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = "RNA_snn_res.0.1")
+
+```
+
+### Proportions
+
+```{r}
+
+cellCounts2 <- table(Celltype = macrophage_merged_harmony$RNA_snn_res.0.1, sample = macrophage_merged_harmony$Dataset)
+cellPerc <- sweep(cellCounts2, 2, colSums(cellCounts2), "/")
+p1 <- ggplot(data = as.data.frame(cellPerc), aes(x = sample, fill = Celltype, y = Freq)) +
+  geom_bar(stat = "identity") +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold", size = 15)) + 
+  labs(title = "Cluster Proportions across Datasets", x = "", y = "fraction of cells")
+p1
+
+
+```
+
+```{r}
+
+mac_markers <- FindAllMarkers(macrophage_merged_harmony, only.pos = TRUE)
+
+mac_markers %>%
+    group_by(cluster) %>%
+    dplyr::filter(avg_log2FC > 1)
+
+mac_markers %>%
+    group_by(cluster) %>%
+    dplyr::filter(avg_log2FC > 1) %>%
+    slice_head(n = 5) %>%
+    ungroup() -> top5
+
+
+top5
+
+
+dittoSeq::dittoDotPlot(macrophage_merged_harmony,
+                       vars = unique(top5$gene), 
+                       group.by = "RNA_snn_res.0.1")
+```
+
+
+```{r}
+
+filter(top5, cluster == "1")$gene
+
+FeaturePlot_scCustom(
+  macrophage_merged_harmony, 
+  features = filter(top5, cluster == "0")$gene) 
+
+FeaturePlot_scCustom(
+  macrophage_merged_harmony, 
+  features = filter(top5, cluster == "1")$gene) 
+
+FeaturePlot_scCustom(
+  macrophage_merged_harmony, 
+  features = filter(top5, cluster == "2")$gene) # clearly mast cells
+
+FeaturePlot_scCustom(
+  macrophage_merged_harmony, 
+  features = filter(top5, cluster == "3")$gene) 
+
+FeaturePlot_scCustom(
+  macrophage_merged_harmony, 
+  features = filter(top5, cluster == "4")$gene) 
+
+```
+
+```{r}
+
+ 
+```
+
+
+```{r}
+
+ 
+```
+
+
+```{r}
+
+ 
+```
+
+```{r}
+
+ 
+```
+
+```{r}
+
+ 
+```
+
+```{r}
+
+ 
+```
+
+```{r}
+
+
+##################################  Clean the UMAP from before
+
+#macrophage_clean <- subset(macrophage_merged_harmony, idents = c(0, 1, 2))
+macrophage_clean <- macrophage_merged_harmony
+variableFeatures <- VariableFeatures(macrophage_clean)
+macrophage_clean <- FindVariableFeatures(macrophage_clean, selection.method = "vst", nfeatures = 2000)
+macrophage_clean <- ScaleData(macrophage_clean, features = variableFeatures, vars.to.regress = "percent.mt")
+macrophage_clean <- RunPCA(macrophage_clean, npcs = 30, verbose = FALSE)
+
+macrophage_clean <- harmony::RunHarmony(
+  object        = macrophage_clean,
+  assay.use     = "RNA",
+  group.by.vars = "Dataset",
+  dims.use      = 1:pcs,
+  plot_convergence = FALSE
+)
+
+macrophage_clean <- RunUMAP(
+  macrophage_clean,
+  reduction    = "harmony",
+  return.model = TRUE,      
+  dims         = 1:pcs
+)
+
+# Re-cluster clean reference
+macrophage_clean <- FindNeighbors(macrophage_clean, reduction = "harmony", dims = 1:pcs)
+macrophage_clean <- FindClusters(macrophage_clean, resolution = 0.1)
+
+########## prep MT data log 
+
+
+MT_data <- MT_data[common_genes_mac, ]
+
+MT_data_norm <- NormalizeData(MT_data, normalization.method = "LogNormalize", scale.factor = 10000)
+
+DefaultAssay(MT_data_norm) <- "RNA"
+
+#################################################
+
+transfer_anchors <- FindTransferAnchors(
+  reference            = macrophage_clean,
+  query                = MT_data_norm,
+  normalization.method = "LogNormalize",
+  reference.reduction  = "pca",       
+  reduction            = "pcaproject",
+  dims                 = 1:pcs,
+  verbose              = TRUE
+)
+
+
+MT_mapped <- MapQuery(
+  anchorset           = transfer_anchors,
+  reference           = macrophage_clean,
+  query               = MT_data_norm,
+  refdata             = list(cell_type_pred = "RNA_snn_res.0.1"),
+  reference.reduction = "harmony",       
+  reduction.model     = "umap"
+)
+
+####################### plotting
+
+p1 <- DimPlot(
+  macrophage_clean,
+  reduction = "umap",
+  group.by  = "RNA_snn_res.0.1",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  MT_mapped,
+  reduction = "ref.umap",
+  group.by  = "predicted.cell_type_pred",
+  label     = TRUE
+) + ggtitle("Mapped MT_Data Query (LogNormalize)")
+
+p1 
+p2
+
+
+```
+
+
