@@ -1,0 +1,395 @@
+---
+title: "OneDSonly"
+author: "Sophie"
+date: "2026-10-23"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: inline
+---
+
+
+# Setup
+
+```{r, message=FALSE, warning = FALSE}
+rm(list=ls())
+gc()
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(Seurat)
+library(hdf5r)
+library(scCustomize)
+library(patchwork)
+library(cowplot)
+library(ggrepel)
+library(workflowr)
+library(scDblFinder)
+library(clustree)
+library(harmony)
+library(speckle)
+library(MAST)
+library(tibble)
+library(EnhancedVolcano)
+
+library(ggarchery)
+library(ggtangle)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(GO.db)
+library(DOSE)
+library(fgsea)
+library(forcats)
+library(SCpubr)
+library(assertthat)
+library(UCell)
+library(DT)
+
+library(ggforce) 
+library(enrichplot)
+library(ggrain)
+library(ComplexHeatmap)
+library(tidyverse)
+library(circlize)
+
+library(ggpubr)
+
+```
+
+
+
+# Running tranfer anchors separately
+
+After trying almost any integration method and either getting a separate Cluster for the MT-Macs or then over integrating this is an attempt
+to take public datasets and inferring anchors to specific groups. 
+
+```{r}
+
+outputdir <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/"
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/MT_data_small.rds"
+MT_data <- read_rds(path)
+
+
+path <- "/shares/rheumatologie.usz/Gino/Datasets_heart/Litvinukova.rds"
+Litvinukova_data <- read_rds(path)
+
+head(Litvinukova_data@meta.data)
+
+DimPlot(Litvinukova_data, reduction = "umap", group.by = "cell_type")
+
+
+MT_data_norm <- NormalizeData(MT_data, normalization.method = "LogNormalize", scale.factor = 10000)
+
+DefaultAssay(MT_data_norm) <- "RNA"
+
+Litvinukova_data <- FindVariableFeatures(Litvinukova_data, selection.method = "vst", nfeatures = 2000)
+
+
+dim(MT_data)
+dim(Litvinukova_data)
+# for demonstration, split the object into reference and query
+pbmc.reference <- Litvinukova_data[, 1:86134]
+pbmc.query <- MT_data[, 1:1126]
+
+# perform standard preprocessing on each object
+pbmc.reference <- NormalizeData(pbmc.reference)
+pbmc.reference <- FindVariableFeatures(pbmc.reference)
+pbmc.reference <- ScaleData(pbmc.reference)
+
+pbmc.query <- NormalizeData(pbmc.query)
+pbmc.query <- FindVariableFeatures(pbmc.query)
+pbmc.query <- ScaleData(pbmc.query)
+
+# find anchors
+anchors <- FindTransferAnchors(reference = pbmc.reference, query = pbmc.query)
+
+# transfer labels
+predictions <- TransferData(
+  anchorset = anchors,
+  refdata = pbmc.reference$cell_type
+)
+pbmc.query <- AddMetaData(object = pbmc.query, metadata = predictions)
+pbmc.query
+
+p1 <- DimPlot(
+  pbmc.reference,
+  reduction = "umap",
+  group.by  = "cell_type",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "predicted.id",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+p1 
+p2 # good, all except 3 cells cluster to myeloid
+```
+
+# subset the myeloid to see where my MT macs cluster to
+
+```{r}
+
+Litvinukova_myeloid <- subset(Litvinukova_data, cell_type == "Myeloid")
+dim(Litvinukova_myeloid)
+
+pbmc.reference <- Litvinukova_myeloid[, 1:23028]
+pbmc.query <- MT_data[, 1:1126]
+
+# perform standard preprocessing on each object
+pbmc.reference <- NormalizeData(pbmc.reference)
+pbmc.reference <- FindVariableFeatures(pbmc.reference)
+pbmc.reference <- ScaleData(pbmc.reference)
+
+pbmc.query <- NormalizeData(pbmc.query)
+pbmc.query <- FindVariableFeatures(pbmc.query)
+pbmc.query <- ScaleData(pbmc.query)
+
+# find anchors
+anchors <- FindTransferAnchors(reference = pbmc.reference, query = pbmc.query)
+
+# transfer labels
+predictions <- TransferData(
+  anchorset = anchors,
+  refdata = pbmc.reference$cell_states
+)
+pbmc.query <- AddMetaData(object = pbmc.query, metadata = predictions)
+pbmc.query
+
+p1 <- DimPlot(
+  pbmc.reference,
+  reduction = "umap",
+  group.by  = "cell_states",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "predicted.id",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+
+
+p3 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "condition",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+p1 
+p2 
+p3
+
+```
+
+```{r}
+
+pbmc.query_meta <- pbmc.query@meta.data 
+
+
+ggplot(pbmc.query_meta, aes(x = condition, fill = predicted.id)) +
+  geom_bar(position = "stack") +
+  theme_classic() +
+  labs(y = "Proportion of Cells", x = "MT TGF_status", title = "Shift in Integrated Clusters (+/- TGFb)")
+
+p2
+FeaturePlot_scCustom(pbmc.query, features = c("FCGR3A", "CD14", "IL17RA"))
+```
+
+# transfer anchors with disease state usin chaffin dataset
+
+```{r}
+
+
+path <- "/shares/rheumatologie.usz/Gino/Datasets_heart/Chaffin.rds"
+Chaffin_data <- read_rds(path)
+
+head(Chaffin_data@meta.data)
+Chaffin_data
+
+DimPlot(Chaffin_data, reduction = "X_umap", group.by = "cell_type_leiden0.6")
+
+
+MT_data_norm <- NormalizeData(MT_data, normalization.method = "LogNormalize", scale.factor = 10000)
+
+DefaultAssay(MT_data_norm) <- "RNA"
+
+Chaffin_data <- FindVariableFeatures(Chaffin_data, selection.method = "vst", nfeatures = 2000)
+
+
+
+
+dim(MT_data)
+dim(Chaffin_data)
+# for demonstration, split the object into reference and query
+pbmc.reference <- Chaffin_data[, 1:92689]
+pbmc.query <- MT_data[, 1:1126]
+
+# perform standard preprocessing on each object
+pbmc.reference <- NormalizeData(pbmc.reference)
+pbmc.reference <- FindVariableFeatures(pbmc.reference)
+pbmc.reference <- ScaleData(pbmc.reference)
+
+pbmc.query <- NormalizeData(pbmc.query)
+pbmc.query <- FindVariableFeatures(pbmc.query)
+pbmc.query <- ScaleData(pbmc.query)
+
+# find anchors
+anchors <- FindTransferAnchors(reference = pbmc.reference, query = pbmc.query)
+
+# transfer labels
+predictions <- TransferData(
+  anchorset = anchors,
+  refdata = pbmc.reference$cell_type_leiden0.6
+)
+pbmc.query <- AddMetaData(object = pbmc.query, metadata = predictions)
+pbmc.query
+
+p1 <- DimPlot(
+  pbmc.reference,
+  reduction = "X_umap",
+  group.by  = "cell_type_leiden0.6",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "predicted.id",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+p1  # good, most cells cluster to myeloid
+p2
+```
+
+# Try also with the subset
+
+```{r}
+
+table(Chaffin_data$cell_type_leiden0.6)
+Chaffin_data_myeloid <- subset(Chaffin_data, cell_type_leiden0.6 %in% c("Macrophage", "Proliferating_macrophage"))
+dim(Chaffin_data_myeloid)
+
+pbmc.reference <- Chaffin_data_myeloid[, 1:55991]
+pbmc.query <- MT_data[, 1:1126]
+
+# perform standard preprocessing on each object
+pbmc.reference <- NormalizeData(pbmc.reference)
+pbmc.reference <- FindVariableFeatures(pbmc.reference)
+pbmc.reference <- ScaleData(pbmc.reference)
+
+pbmc.query <- NormalizeData(pbmc.query)
+pbmc.query <- FindVariableFeatures(pbmc.query)
+pbmc.query <- ScaleData(pbmc.query)
+
+# find anchors
+anchors <- FindTransferAnchors(reference = pbmc.reference, query = pbmc.query)
+
+# transfer labels
+predictions <- TransferData(
+  anchorset = anchors,
+  refdata = pbmc.reference$SubCluster    # first only the subcluster celltypes
+)
+pbmc.query <- AddMetaData(object = pbmc.query, metadata = predictions)
+pbmc.query
+
+p1 <- DimPlot(
+  pbmc.reference,
+  reduction = "X_umap",
+  group.by  = "SubCluster",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "predicted.id",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+
+
+p3 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "condition",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+p1
+p2
+p3
+
+############################################################ now disease 
+
+
+# transfer labels
+predictions <- TransferData(
+  anchorset = anchors,
+  refdata = pbmc.reference$disease   
+)
+pbmc.query <- AddMetaData(object = pbmc.query, metadata = predictions)
+pbmc.query
+
+p1 <- DimPlot(
+  pbmc.reference,
+  reduction = "X_umap",
+  group.by  = "disease",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "predicted.id",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+
+
+p3 <- DimPlot(
+  pbmc.query,
+  reduction = "umap",
+  group.by  = "condition",
+  label     = TRUE
+) + ggtitle("Mapped  Query (LogNormalize)")
+
+p1 
+p2 
+p3
+
+pbmc.query_meta <- pbmc.query@meta.data 
+
+
+ggplot(pbmc.query_meta, aes(x = condition, fill = predicted.id)) +
+  geom_bar(position = "stack") +
+  theme_classic() +
+  labs(y = "Proportion of Cells", x = "MT TGF_status", title = "Shift in Integrated Clusters (+/- TGFb)")
+
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
