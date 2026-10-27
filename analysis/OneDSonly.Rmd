@@ -63,6 +63,9 @@ library(ggpubr)
 After trying almost any integration method and either getting a separate Cluster for the MT-Macs or then over integrating this is an attempt
 to take public datasets and inferring anchors to specific groups. 
 
+# First we only take the Litvinukova_data
+
+
 ```{r}
 
 outputdir <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/"
@@ -130,7 +133,7 @@ p1
 p2 # good, all except 3 cells cluster to myeloid
 ```
 
-# subset the myeloid to see where my MT macs cluster to
+## subset the myeloid to see where my MT macs cluster to
 
 ```{r}
 
@@ -189,21 +192,27 @@ p3
 
 ```
 
+## Checking the distibution of "Celltypes" 
+
+This Dataset only has HC so we can't check any disease effects
+
 ```{r}
 
 pbmc.query_meta <- pbmc.query@meta.data 
 
 
-ggplot(pbmc.query_meta, aes(x = condition, fill = predicted.id)) +
+p <- ggplot(pbmc.query_meta, aes(x = condition, fill = predicted.id)) +
   geom_bar(position = "stack") +
   theme_classic() +
   labs(y = "Proportion of Cells", x = "MT TGF_status", title = "Shift in Integrated Clusters (+/- TGFb)")
 
-p2
+p
+
 FeaturePlot_scCustom(pbmc.query, features = c("FCGR3A", "CD14", "IL17RA"))
+
 ```
 
-# transfer anchors with disease state usin chaffin dataset
+## transfer anchors with disease state using chaffin dataset
 
 ```{r}
 
@@ -228,6 +237,7 @@ Chaffin_data <- FindVariableFeatures(Chaffin_data, selection.method = "vst", nfe
 
 dim(MT_data)
 dim(Chaffin_data)
+
 # for demonstration, split the object into reference and query
 pbmc.reference <- Chaffin_data[, 1:92689]
 pbmc.query <- MT_data[, 1:1126]
@@ -270,7 +280,7 @@ p1  # good, most cells cluster to myeloid
 p2
 ```
 
-# Try also with the subset
+## Try also with the myeloid subset
 
 ```{r}
 
@@ -328,8 +338,11 @@ p1
 p2
 p3
 
-############################################################ now disease 
+```
 
+## Now check the disease subset
+
+```{r}
 
 # transfer labels
 predictions <- TransferData(
