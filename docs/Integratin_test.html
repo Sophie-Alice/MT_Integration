@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Sophie" />
+
+<meta name="date" content="2026-09-18" />
+
+<title>Integratin_test</title>
+
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Integration</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/Sophie-Alice/MT_Integration">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Integratin_test</h1>
+<h4 class="author">Sophie</h4>
+<h4 class="date">2026-09-18</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2026-10-27
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>Integration/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.2). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20260910code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20260910)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20260910code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20260910)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomSophieAliceMTIntegrationtree21874844452797cbb374ea73427847fd343b119atargetblank2187484a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/Sophie-Alice/MT_Integration/tree/21874844452797cbb374ea73427847fd343b119a" target="_blank">2187484</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomSophieAliceMTIntegrationtree21874844452797cbb374ea73427847fd343b119atargetblank2187484a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/Sophie-Alice/MT_Integration/tree/21874844452797cbb374ea73427847fd343b119a" target="_blank">2187484</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  analysis/Integration3.Rmd
+    Untracked:  analysis/core
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/Integratin_test.Rmd</code>) and
+HTML (<code>docs/Integratin_test.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/Sophie-Alice/MT_Integration/blob/21874844452797cbb374ea73427847fd343b119a/analysis/Integratin_test.Rmd" target="_blank">2187484</a>
+</td>
+<td>
+Sophie
+</td>
+<td>
+2026-10-27
+</td>
+<td>
+wflow_publish(c("analysis/Integratin_test.Rmd", "analysis/index.Rmd"))
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="setup" class="section level1">
+<h1>Setup</h1>
+<pre class="r"><code>rm(list=ls())
+gc()</code></pre>
+<pre><code>          used (Mb) gc trigger (Mb) max used (Mb)
+Ncells  902931 48.3    1744280 93.2  1315497 70.3
+Vcells 1583847 12.1    8388608 64.0  2432062 18.6</code></pre>
+<pre class="r"><code>library(readr)
+library(dplyr)
+library(ggplot2)
+library(Seurat)
+library(hdf5r)
+library(scCustomize)
+library(patchwork)
+library(cowplot)
+library(ggrepel)
+library(workflowr)
+library(scDblFinder)
+library(clustree)
+library(harmony)
+library(speckle)
+library(MAST)
+library(tibble)
+library(EnhancedVolcano)
+
+library(ggarchery)
+library(ggtangle)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(GO.db)
+library(DOSE)
+library(fgsea)
+library(forcats)
+library(SCpubr)
+library(assertthat)
+library(UCell)
+library(DT)
+
+library(ggforce) 
+library(enrichplot)
+library(ggrain)
+library(ComplexHeatmap)
+library(tidyverse)
+library(circlize)
+
+library(ggpubr)</code></pre>
+</div>
+<div id="getting-the-merge-to-run-on-a-small-sample-set"
+class="section level1">
+<h1>getting the merge to run on a small sample set</h1>
+<pre class="r"><code>outputdir &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/&quot;
+
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/MT_data_small.rds&quot;
+MT_data &lt;- read_rds(path)
+
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Chaffin_data_small.rds&quot;
+Chaffin_data &lt;- read_rds(path)
+
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/DCM_data_small.rds&quot;
+DCM_data &lt;- read_rds(path)
+
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Litvinukova_data_small.rds&quot;
+Litvinukova_data &lt;- read_rds(path)
+
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Reichart_data_small.rds&quot;
+Reichart_data &lt;- read_rds(path)
+
+
+length(table(MT_data$sample))</code></pre>
+<pre><code>[1] 1</code></pre>
+<pre class="r"><code>length(table(Chaffin_data$sample))</code></pre>
+<pre><code>[1] 80</code></pre>
+<pre class="r"><code>length(table(DCM_data$sample))</code></pre>
+<pre><code>[1] 38</code></pre>
+<pre class="r"><code>length(table(Litvinukova_data$sample))</code></pre>
+<pre><code>[1] 147</code></pre>
+<pre class="r"><code>table(Litvinukova_data$condition)</code></pre>
+<pre><code>
+   HC 
+12119 </code></pre>
+<pre class="r"><code>length(table(Reichart_data$sample))</code></pre>
+<pre><code>[1] 196</code></pre>
+<pre class="r"><code>table(Reichart_data$condition)</code></pre>
+<pre><code>
+  ACM   DCM    HC  LVCM 
+10682 45010  9472   766 </code></pre>
+</div>
+<div id="subsetting-max-5-samples-per-dataset-to-test"
+class="section level1">
+<h1>subsetting max 5 samples per dataset to test</h1>
+<pre class="r"><code>set.seed(42)
+
+#Pick up to n samples per object. method = &quot;largest&quot; stress-tests with your
+#biggest samples first (catches hangs/OOM fastest); &quot;random&quot; gives a more
+#§representative but less adversarial test.
+subset_max_samples &lt;- function(obj, n = 2, method = c(&quot;largest&quot;, &quot;random&quot;)) {
+  method &lt;- match.arg(method)
+  stopifnot(&quot;sample&quot; %in% colnames(obj@meta.data))
+
+  tab &lt;- table(obj$sample)
+  tab &lt;- tab[tab &gt; 0]
+
+  chosen &lt;- if (method == &quot;largest&quot;) {
+    names(sort(tab, decreasing = TRUE))[seq_len(min(n, length(tab)))]
+  } else {
+    sample(names(tab), min(n, length(tab)))
+  }
+
+  message(sprintf(&quot;%-12s: %d -&gt; %d samples | %d -&gt; %d cells&quot;,
+                   unique(obj$Dataset), length(tab), length(chosen),
+                   ncol(obj), sum(tab[chosen])))
+
+  cells_keep &lt;- colnames(obj)[obj$sample %in% chosen]
+  subset(obj, cells = cells_keep)
+}
+
+# apply to each loaded object
+MT_data           &lt;- subset_max_samples(MT_data,           n = 5, method = &quot;random&quot;)</code></pre>
+<pre><code>MT_Data     : 1 -&gt; 1 samples | 1126 -&gt; 1126 cells</code></pre>
+<pre class="r"><code>Chaffin_data       &lt;- subset_max_samples(Chaffin_data,      n = 5, method = &quot;random&quot;)</code></pre>
+<pre><code>Chaffin     : 80 -&gt; 5 samples | 60456 -&gt; 2967 cells</code></pre>
+<pre class="r"><code>DCM_data           &lt;- subset_max_samples(DCM_data,          n = 5, method = &quot;random&quot;)</code></pre>
+<pre><code>DCM         : 38 -&gt; 5 samples | 31397 -&gt; 4902 cells</code></pre>
+<pre class="r"><code>Litvinukova_data   &lt;- subset_max_samples(Litvinukova_data,  n = 5, method = &quot;random&quot;)</code></pre>
+<pre><code>Litvinukova : 91 -&gt; 5 samples | 12119 -&gt; 677 cells</code></pre>
+<pre class="r"><code>Reichart_data      &lt;- subset_max_samples(Reichart_data,     n = 5, method = &quot;random&quot;)</code></pre>
+<pre><code>Reichart    : 196 -&gt; 5 samples | 65930 -&gt; 1457 cells</code></pre>
+</div>
+<div id="now-intersect-the-common-genes" class="section level1">
+<h1>now intersect the common genes</h1>
+<pre class="r"><code>common_genes_mac &lt;- Reduce(
+  intersect,
+  list(
+    rownames(MT_data),
+    rownames(Reichart_data),
+    rownames(Chaffin_data),
+    rownames(Litvinukova_data),
+    rownames(DCM_data)
+  )
+)
+
+######## merge the object
+
+macrophage_merged &lt;- merge(
+  x = MT_data,
+  y = list(Reichart_data, Chaffin_data, Litvinukova_data, DCM_data),
+  add.cell.ids = c(&quot;MT&quot;, &quot;Reichart&quot;, &quot;Chaffin&quot;, &quot;Litvinukova&quot;, &quot;DCM&quot;),
+  project = &quot;Merged_Macrophage_Atlas&quot;
+)
+
+# 4. Subset merged object to common gene set 
+macrophage_merged &lt;- macrophage_merged[common_genes_mac, ]
+macrophage_merged</code></pre>
+<pre><code>An object of class Seurat 
+19845 features across 11129 samples within 1 assay 
+Active assay: RNA (19845 features, 0 variable features)
+ 9 layers present: counts.1, counts.2, counts.3, counts.4, counts.5, data.1, data.3, data.4, data.5</code></pre>
+<pre class="r"><code>table(macrophage_merged$sample)</code></pre>
+<pre><code>
+BO_H19_LV0_premrna BO_H29_S00_premrna BO_H80_RV0_premrna BS_H35_S00_premrna 
+               297                259                527                111 
+ED_DS3_LV0_premrna        H_ZC-11-292       H0015_LA_new      H0037_RA_corr 
+               263               1148                229                151 
+   HCAHeart7664653    HCAHeart7836684    HCAHeart8287124      LV_1290_1_dcm 
+               206                 73                 18                565 
+      LV_1516_1_nf       LV_1540_2_nf       LV_1549_2_nf      LV_1685_2_hcm 
+               776                319                751                556 
+        MT_derived         TWCM-10-68         TWCM-11-78        TWCM-13-168 
+              1126                458               1748               1018 
+        TWCM-13-84 
+               530 </code></pre>
+<pre class="r"><code># Clean up raw workspace objects to free memory
+#rm(MT_data, Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+
+# QC Visualization
+VlnPlot(
+  macrophage_merged,
+  features = c(&quot;nFeature_RNA&quot;, &quot;nCount_RNA&quot;, &quot;percent.mt&quot;),
+  group.by = &quot;Dataset&quot;,
+  pt.size = 0,
+  raster = FALSE
+)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>table(macrophage_merged$condition)</code></pre>
+<pre><code>
+     ACM      DCM       HC      HCM   no_TGF with_TGF 
+     259     2182     7006      556      662      464 </code></pre>
+<pre class="r"><code># --------------------------------------------------------------
+# 1. Split, filter tiny samples, run SCTransform per sample
+# --------------------------------------------------------------
+
+DefaultAssay(macrophage_merged) &lt;- &quot;RNA&quot;
+
+# collapse any pre-existing multi-layer counts into one, BEFORE splitting by sample
+if (length(grep(&quot;^counts&quot;, Layers(macrophage_merged[[&quot;RNA&quot;]]))) &gt; 1) {
+  macrophage_merged[[&quot;RNA&quot;]] &lt;- JoinLayers(macrophage_merged[[&quot;RNA&quot;]])
+  message(&quot;Joined RNA layers -&gt; &quot;, paste(Layers(macrophage_merged[[&quot;RNA&quot;]]), collapse = &quot;, &quot;))
+}</code></pre>
+<pre><code>Joined RNA layers -&gt; data, counts</code></pre>
+<pre class="r"><code>table(macrophage_merged$sample)</code></pre>
+<pre><code>
+BO_H19_LV0_premrna BO_H29_S00_premrna BO_H80_RV0_premrna BS_H35_S00_premrna 
+               297                259                527                111 
+ED_DS3_LV0_premrna        H_ZC-11-292       H0015_LA_new      H0037_RA_corr 
+               263               1148                229                151 
+   HCAHeart7664653    HCAHeart7836684    HCAHeart8287124      LV_1290_1_dcm 
+               206                 73                 18                565 
+      LV_1516_1_nf       LV_1540_2_nf       LV_1549_2_nf      LV_1685_2_hcm 
+               776                319                751                556 
+        MT_derived         TWCM-10-68         TWCM-11-78        TWCM-13-168 
+              1126                458               1748               1018 
+        TWCM-13-84 
+               530 </code></pre>
+<pre class="r"><code>sample_list &lt;- SplitObject(macrophage_merged, split.by = &quot;sample&quot;)
+
+sample_sizes  &lt;- sapply(sample_list, ncol)
+valid_samples &lt;- names(sample_sizes[sample_sizes &gt;= 100])
+
+message(length(sample_list) - length(valid_samples),
+        &quot; tiny samples (&lt;100 cells) excluded to prevent regression errors.&quot;)</code></pre>
+<pre><code>2 tiny samples (&lt;100 cells) excluded to prevent regression errors.</code></pre>
+<pre class="r"><code>sample_list &lt;- sample_list[valid_samples]
+
+sct_list &lt;- list()
+
+for (s in names(sample_list)) {
+  if (&quot;SCT&quot; %in% names(sample_list[[s]]@assays)) {
+    sample_list[[s]][[&quot;SCT&quot;]] &lt;- NULL
+  }
+
+  sct_list[[s]] &lt;- tryCatch({
+    SCTransform(
+      sample_list[[s]],
+      vst.flavor            = &quot;v2&quot;,
+      vars.to.regress        = &quot;percent.mt&quot;,
+      return.only.var.genes  = TRUE,
+      variable.features.n    = 2000,
+      min_cells               = 5,
+      verbose                  = FALSE
+    )
+  }, error = function(e) {
+    warning(&quot;SCTransform failed for sample &quot;, s, &quot;: &quot;, e$message)
+    return(NULL)
+  })
+}
+
+# report + drop failures explicitly, don&#39;t lose track of what vanished
+failed &lt;- names(sct_list)[sapply(sct_list, is.null)]
+if (length(failed) &gt; 0) {
+  message(length(failed), &quot; samples failed SCTransform: &quot;,
+          paste(failed, collapse = &quot;, &quot;))
+}
+sct_list &lt;- sct_list[!sapply(sct_list, is.null)]
+stopifnot(length(sct_list) &gt; 0)
+
+############################## new code
+
+# ==============================================================
+# NEW SECTION 2 &amp; 3: PrepSCTIntegration + Low-RAM Merge
+# (REPLACES YOUR OLD SECTIONS 2 AND 3 ENTIRELY)
+# ==============================================================
+
+# Step A: Find the consensus 2,000 variable features across all samples
+features &lt;- SelectIntegrationFeatures(object.list = sct_list, nfeatures = 2000)
+
+# Step B: Calculate scale.data inside EACH individual sample before merging
+# (Extremely fast &amp; low RAM because each sample is only ~450 cells)
+message(&quot;Prepping SCT residuals per sample across &quot;, length(sct_list), &quot; samples...&quot;)</code></pre>
+<pre><code>Prepping SCT residuals per sample across 19 samples...</code></pre>
+<pre class="r"><code>sct_list &lt;- PrepSCTIntegration(
+  object.list     = sct_list,
+  anchor.features = features,
+  verbose         = FALSE
+)
+
+# Step C: Merge the objects
+# merge.data = TRUE safely concatenates the small 2,000-gene scale.data matrices
+message(&quot;Merging samples...&quot;)</code></pre>
+<pre><code>Merging samples...</code></pre>
+<pre class="r"><code>macrophage_merged &lt;- merge(
+  x          = sct_list[[1]],
+  y          = sct_list[-1],
+  merge.data = TRUE
+)
+
+# Step D: Assign Default Assay and Variable Features
+DefaultAssay(macrophage_merged)     &lt;- &quot;SCT&quot;
+VariableFeatures(macrophage_merged) &lt;- features
+
+# Step E: Join RNA counts layers if needed for downstream operations
+DefaultAssay(macrophage_merged) &lt;- &quot;RNA&quot;
+rna_layers &lt;- grep(&quot;^counts&quot;, Layers(macrophage_merged[[&quot;RNA&quot;]]), value = TRUE)
+if (length(rna_layers) &gt; 1) {
+  macrophage_merged[[&quot;RNA&quot;]] &lt;- JoinLayers(macrophage_merged[[&quot;RNA&quot;]])
+}
+
+# Switch back to SCT for PCA / Harmony
+DefaultAssay(macrophage_merged) &lt;- &quot;SCT&quot;
+
+# Verification
+sd_dim &lt;- dim(GetAssayData(macrophage_merged, assay = &quot;SCT&quot;, layer = &quot;scale.data&quot;))
+message(&quot;Final scale.data dimensions: &quot;, sd_dim[1], &quot; x &quot;, sd_dim[2])</code></pre>
+<pre><code>Final scale.data dimensions: 2000 x 11038</code></pre>
+<pre class="r"><code>stopifnot(all(sd_dim &gt; 0))
+
+macrophage_merged</code></pre>
+<pre><code>An object of class Seurat 
+34186 features across 11038 samples within 2 assays 
+Active assay: SCT (14341 features, 2000 variable features)
+ 3 layers present: counts, data, scale.data
+ 1 other assay present: RNA</code></pre>
+<div id="pca" class="section level2">
+<h2>PCA</h2>
+<pre class="r"><code>macrophage_merged &lt;- RunPCA(macrophage_merged, npcs = 50, verbose = FALSE)
+ElbowPlot(macrophage_merged, ndims = 50)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/pca%20fibroblasts%20combined-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+<div id="harmony---too-much" class="section level2">
+<h2>Harmony - too much</h2>
+<pre class="r"><code>#macrophage_merged@meta.data
+# macrophage_merged &lt;- harmony::RunHarmony(
+#   object = macrophage_merged,
+#   assay.use = &quot;SCT&quot;,
+#   group.by.vars = c(&quot;sample&quot;, &quot;Dataset&quot;),
+#   dims.use = 1:50,
+#   plot_convergence = TRUE,
+#   .options = harmony::harmony_options(max.iter.cluster = 100)
+# )</code></pre>
+</div>
+<div id="clustering" class="section level2">
+<h2>Clustering</h2>
+<pre class="r"><code>DefaultAssay(macrophage_merged) &lt;- &quot;SCT&quot;
+
+# macrophage_merged &lt;- RunUMAP(
+#   macrophage_merged,
+#   reduction = &quot;pca&quot;,
+#   dims = 1:15
+# )
+macrophage_merged &lt;- RunUMAP(
+  macrophage_merged, 
+  reduction = &quot;pca&quot;, 
+  dims = 1:15, 
+  min.dist = 0.05,   # Default is 0.3; lowering it separates dense continuous populations
+  spread = 1.2,
+  n.neighbors = 50   # Preserves global structure better across large cell counts
+)</code></pre>
+<pre><code>Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to &#39;umap-learn&#39; and metric to &#39;correlation&#39;
+This message will be shown once per session</code></pre>
+<pre><code>13:02:08 UMAP embedding parameters a = 1.314 b = 0.8333</code></pre>
+<pre><code>13:02:08 Read 11038 rows and found 15 numeric columns</code></pre>
+<pre><code>13:02:08 Using Annoy for neighbor search, n_neighbors = 50</code></pre>
+<pre><code>13:02:08 Building Annoy index with metric = cosine, n_trees = 50</code></pre>
+<pre><code>0%   10   20   30   40   50   60   70   80   90   100%</code></pre>
+<pre><code>[----|----|----|----|----|----|----|----|----|----|</code></pre>
+<pre><code>**************************************************|
+13:02:09 Writing NN index file to temp file /tmp/RtmpXh0cPr/file31ef62413eac82
+13:02:09 Searching Annoy index using 1 thread, search_k = 5000
+13:02:14 Annoy recall = 100%
+13:02:16 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 50
+13:02:18 Initializing from normalized Laplacian + noise (using RSpectra)
+13:02:18 Commencing optimization for 200 epochs, with 761434 positive edges
+13:02:18 Using rng type: pcg
+13:02:23 Optimization finished</code></pre>
+<pre class="r"><code>DimPlot(macrophage_merged, reduction = &quot;umap&quot;, group.by = &quot;Dataset&quot;)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/clustering%20fibroblasts%20combined-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>macrophage_merged &lt;- FindNeighbors(
+  macrophage_merged,
+  reduction = &quot;pca&quot;,
+  dims = 1:15
+)</code></pre>
+<pre><code>Computing nearest neighbor graph
+Computing SNN</code></pre>
+<pre class="r"><code>macrophage_merged &lt;- FindClusters(
+  macrophage_merged,
+  resolution = seq(0.1, 0.5, by = 0.1)
+  )</code></pre>
+<pre><code>Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 11038
+Number of edges: 323006
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.9315
+Number of communities: 4
+Elapsed time: 1 seconds
+Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 11038
+Number of edges: 323006
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.8827
+Number of communities: 6
+Elapsed time: 1 seconds
+Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 11038
+Number of edges: 323006
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.8555
+Number of communities: 7
+Elapsed time: 1 seconds
+Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 11038
+Number of edges: 323006
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.8280
+Number of communities: 7
+Elapsed time: 1 seconds
+Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 11038
+Number of edges: 323006
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.8042
+Number of communities: 8
+Elapsed time: 1 seconds</code></pre>
+<pre class="r"><code>Idents(macrophage_merged) &lt;- &quot;SCT_snn_res.0.2&quot;
+DimPlot(macrophage_merged, reduction = &quot;umap&quot;)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/clustering%20fibroblasts%20combined-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>table(macrophage_merged$cell_statesL2, macrophage_merged$SCT_snn_res.0.2)</code></pre>
+<pre><code>                                    
+                                        0    1    2    3    4    5
+  Macrophage_Inflammatory_Chemokine    92   96    4    0    0   60
+  Macrophage_ISG                       22   12    0    0    0    0
+  Macrophage_MHCII_AgP                 71  121    3    0    0    0
+  Macrophage_Resident_LYVE1          1986  483   57    2    4    0
+  Macrophage_TREM2_Phagocytic          65  714   75    2    0    1
+  Monocyte_Classical_CD14_VCAN          2  114    2    0    0    1
+  Monocyte_Inflammatory_Intermediate    3    9    0    1    0    2
+  Monocyte_NonClassical_CD16           24   86    1    0    0   16
+  MT_Macrophages                       84   66  951    7   18    0
+  Myeloid_Cycling                      32   47    2    0   95    0
+  Other_Immune_NonMyeloid             133  238    6  248   77    1
+  unknown                            2417 1845  122  295  128   95</code></pre>
+<pre class="r"><code>clustree::clustree(macrophage_merged@meta.data[,grep(&quot;SCT_snn_res&quot;, colnames(macrophage_merged@meta.data))], prefix = &quot;SCT_snn_res.&quot;)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/clustree-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="umaps-combined" class="section level2">
+<h2>UMAPs combined</h2>
+<p>Deciding on SCT_snn 0.3</p>
+<pre class="r"><code>Idents(macrophage_merged) &lt;- &quot;SCT_snn_res.0.3&quot;
+
+p1 &lt;- DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  group.by = &quot;SCT_snn_res.0.3&quot;,
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle(&quot;Combined Macrophages subclusters&quot;) +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    plot.title = element_text(size = 14, face = &quot;bold&quot;, hjust = 0.5)
+  )
+
+p2 &lt;- DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  group.by = &quot;Dataset&quot;,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  ggtitle(&quot;Dataset&quot;) +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    plot.title = element_text(size = 14, face = &quot;bold&quot;, hjust = 0.5)
+  )
+
+p &lt;- DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  group.by = &quot;cell_statesL2&quot;,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  ggtitle(&quot;cell_statesL1&quot;) +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    plot.title = element_text(size = 14, face = &quot;bold&quot;, hjust = 0.5)
+  )
+
+p3 &lt;- DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  split.by = &quot;Dataset&quot;,
+  group.by = &quot;SCT_snn_res.0.3&quot;,
+  label = FALSE,
+  shuffle = TRUE,
+  pt.size = 0.1,
+  raster = FALSE,
+  ncol = 3
+) +
+  NoLegend() +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    strip.text = element_text(size = 12, face = &quot;bold&quot;)
+  )
+
+p4 &lt;- DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  split.by = &quot;condition&quot;,
+  group.by = &quot;SCT_snn_res.0.3&quot;,
+  label = FALSE,
+  shuffle = TRUE,
+  pt.size = 0.1,
+  raster = FALSE,
+  ncol = 3
+) +
+  NoLegend() +
+  theme(
+    axis.text = element_text(size = 8, face = &quot;bold&quot;),
+    axis.title = element_text(size = 12, face = &quot;bold&quot;),
+    strip.text = element_text(size = 12, face = &quot;bold&quot;)
+  )
+
+(p1 | p2) / (p3 | p)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/umaps%20%20combined-1.png" width="1056" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DimPlot(
+  macrophage_merged,
+  reduction = &quot;umap&quot;,
+  group.by = &quot;condition&quot;,
+  label = FALSE,
+  shuffle = TRUE,
+  pt.size = 0.1,
+  raster = FALSE)</code></pre>
+<p><img src="figure/Integratin_test.Rmd/umaps%20%20combined-2.png" width="1056" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>table(macrophage_merged$method)</code></pre>
+<pre><code>
+   sn 
+11038 </code></pre>
+</div>
+</div>
+<div id="save-rds" class="section level1">
+<h1>save Rds</h1>
+<pre class="r"><code># Save obj
+
+outputdir &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/&quot;
+
+#saveRDS(macrophage_merged, file = file.path(outputdir, &quot;Mac_Integrated3_MT_Derived_sample.rds&quot;))</code></pre>
+</div>
+<div id="another-test-to-combat-over-integration"
+class="section level1">
+<h1>another test to combat over integration:</h1>
+<pre class="r"><code># ==============================================================================
+# 1. MERGE RAW RNA ASSAYS (Keep full gene set for SCT modeling)
+# ==============================================================================
+DefaultAssay(MT_data) &lt;- &quot;RNA&quot;
+
+macrophage_merged &lt;- merge(
+  x = MT_data,
+  y = list(Reichart_data, Chaffin_data, Litvinukova_data, DCM_data),
+  add.cell.ids = c(&quot;MT&quot;, &quot;Reichart&quot;, &quot;Chaffin&quot;, &quot;Litvinukova&quot;, &quot;DCM&quot;),
+  project = &quot;Merged_Macrophage_Atlas&quot;
+)
+
+# Clean workspace memory
+#rm(MT_data, Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+macrophage_merged &lt;- macrophage_merged[common_genes_mac, ]
+macrophage_merged</code></pre>
+<pre><code>An object of class Seurat 
+19845 features across 11129 samples within 1 assay 
+Active assay: RNA (19845 features, 0 variable features)
+ 9 layers present: counts.1, counts.2, counts.3, counts.4, counts.5, data.1, data.3, data.4, data.5</code></pre>
+<pre class="r"><code>table(macrophage_merged$sample)</code></pre>
+<pre><code>
+BO_H19_LV0_premrna BO_H29_S00_premrna BO_H80_RV0_premrna BS_H35_S00_premrna 
+               297                259                527                111 
+ED_DS3_LV0_premrna        H_ZC-11-292       H0015_LA_new      H0037_RA_corr 
+               263               1148                229                151 
+   HCAHeart7664653    HCAHeart7836684    HCAHeart8287124      LV_1290_1_dcm 
+               206                 73                 18                565 
+      LV_1516_1_nf       LV_1540_2_nf       LV_1549_2_nf      LV_1685_2_hcm 
+               776                319                751                556 
+        MT_derived         TWCM-10-68         TWCM-11-78        TWCM-13-168 
+              1126                458               1748               1018 
+        TWCM-13-84 
+               530 </code></pre>
+<pre class="r"><code># Join RNA layers if split
+if (length(grep(&quot;^counts&quot;, Layers(macrophage_merged[[&quot;RNA&quot;]]))) &gt; 1) {
+  macrophage_merged[[&quot;RNA&quot;]] &lt;- JoinLayers(macrophage_merged[[&quot;RNA&quot;]])
+}
+
+# ==============================================================================
+# 2. RUN GLOBAL SCTRANSFORM (Preserves cross-dataset variance)
+# ==============================================================================
+macrophage_merged &lt;- SCTransform(
+  macrophage_merged,
+  vst.flavor           = &quot;v2&quot;,
+  vars.to.regress       = &quot;percent.mt&quot;,
+  return.only.var.genes = FALSE,
+  verbose               = FALSE
+)
+
+
+# ==============================================================================
+# 3. PCA &amp; CONTROLLED HARMONY INTEGRATION
+# ==============================================================================
+pcs &lt;- 20
+
+DefaultAssay(macrophage_merged) &lt;- &quot;SCT&quot;
+macrophage_merged &lt;- RunPCA(macrophage_merged, npcs = 30, verbose = FALSE)
+
+macrophage_merged &lt;- RunUMAP(macrophage_merged, reduction = &quot;pca&quot;, dims = 1:pcs)</code></pre>
+<pre><code>13:04:06 UMAP embedding parameters a = 0.9922 b = 1.112</code></pre>
+<pre><code>13:04:06 Read 11129 rows and found 20 numeric columns</code></pre>
+<pre><code>13:04:06 Using Annoy for neighbor search, n_neighbors = 30</code></pre>
+<pre><code>13:04:06 Building Annoy index with metric = cosine, n_trees = 50</code></pre>
+<pre><code>0%   10   20   30   40   50   60   70   80   90   100%</code></pre>
+<pre><code>[----|----|----|----|----|----|----|----|----|----|</code></pre>
+<pre><code>**************************************************|
+13:04:07 Writing NN index file to temp file /tmp/RtmpXh0cPr/file31ef6223680983
+13:04:07 Searching Annoy index using 1 thread, search_k = 3000
+13:04:10 Annoy recall = 100%
+13:04:11 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 30
+13:04:14 Initializing from normalized Laplacian + noise (using RSpectra)
+13:04:14 Commencing optimization for 200 epochs, with 462920 positive edges
+13:04:14 Using rng type: pcg
+13:04:18 Optimization finished</code></pre>
+<pre class="r"><code>DimPlot(macrophage_merged, reduction = &quot;umap&quot;, group.by = c(&quot;Dataset&quot;, &quot;condition&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Group ONLY by Dataset to avoid stripping patient/disease variation
+# Using 20 PCs and setting theta = 1 prevents over-clustering
+macrophage_merged_harmony &lt;- harmony::RunHarmony(
+  object           = macrophage_merged,
+  assay.use        = &quot;SCT&quot;,
+  group.by.vars    = c(&quot;Dataset&quot;),      
+  dims.use         = 1:pcs,             # Gentler integration penalty (default is 2)
+  plot_convergence = FALSE
+)</code></pre>
+<pre><code>Transposing data matrix
+Initializing state using k-means centroids initialization
+Harmony 1/10
+Harmony 2/10
+Harmony 3/10
+Harmony 4/10
+Harmony 5/10
+Harmony converged after 5 iterations</code></pre>
+<pre class="r"><code># ==============================================================================
+# 4. UMAP &amp; CLUSTERING (Using matching 1:20 Harmony dimensions)
+# ==============================================================================
+macrophage_merged_harmony &lt;- RunUMAP(
+  macrophage_merged_harmony,
+  reduction = &quot;harmony&quot;,
+  dims      = 1:pcs
+)</code></pre>
+<pre><code>13:04:22 UMAP embedding parameters a = 0.9922 b = 1.112
+13:04:22 Read 11129 rows and found 20 numeric columns
+13:04:22 Using Annoy for neighbor search, n_neighbors = 30
+13:04:22 Building Annoy index with metric = cosine, n_trees = 50
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+13:04:23 Writing NN index file to temp file /tmp/RtmpXh0cPr/file31ef62172e73a3
+13:04:23 Searching Annoy index using 1 thread, search_k = 3000
+13:04:26 Annoy recall = 100%
+13:04:28 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 30
+13:04:30 Initializing from normalized Laplacian + noise (using RSpectra)
+13:04:30 Commencing optimization for 200 epochs, with 470184 positive edges
+13:04:30 Using rng type: pcg
+13:04:35 Optimization finished</code></pre>
+<pre class="r"><code>macrophage_merged_harmony &lt;- FindNeighbors(
+  macrophage_merged_harmony,
+  reduction = &quot;harmony&quot;,
+  dims      = 1:pcs
+)</code></pre>
+<pre><code>Computing nearest neighbor graph
+Computing SNN</code></pre>
+<pre class="r"><code>macrophage_merged_harmony &lt;- FindClusters(
+  macrophage_merged_harmony,
+  resolution = 0.2
+)</code></pre>
+<pre><code>Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 11129
+Number of edges: 416180
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.9237
+Number of communities: 10
+Elapsed time: 1 seconds</code></pre>
+<pre class="r"><code>DimPlot(macrophage_merged_harmony, reduction = &quot;umap&quot;, group.by = c(&quot;Dataset&quot;, &quot;condition&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-7-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DimPlot(macrophage_merged_harmony, reduction = &quot;umap&quot;, group.by = c(&quot;region&quot;, &quot;cell_statesL2&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-7-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="map-the-atlas-then-add-mt" class="section level1">
+<h1>Map the atlas then add MT</h1>
+</div>
+<div id="using-log-tranform" class="section level1">
+<h1>using log tranform</h1>
+<pre class="r"><code>common_genes_mac &lt;- Reduce(
+  intersect,
+  list(
+    rownames(MT_data),
+    rownames(Reichart_data),
+    rownames(Chaffin_data),
+    rownames(Litvinukova_data),
+    rownames(DCM_data)
+  )
+)
+
+
+# ==============================================================================
+# 1. MERGE RAW RNA ASSAYS (Keep full gene set for SCT modeling)
+# ==============================================================================
+DefaultAssay(Reichart_data) &lt;- &quot;RNA&quot;
+
+macrophage_merged_background &lt;- merge(
+  x = Reichart_data,
+  y = list(Chaffin_data, Litvinukova_data, DCM_data),
+  add.cell.ids = c(&quot;Reichart&quot;, &quot;Chaffin&quot;, &quot;Litvinukova&quot;, &quot;DCM&quot;),
+  project = &quot;Merged_Macrophage_Atlas&quot;
+)
+
+# Clean workspace memory
+#rm(MT_data, Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+macrophage_merged_background &lt;- macrophage_merged_background[common_genes_mac, ]
+macrophage_merged_background</code></pre>
+<pre><code>An object of class Seurat 
+19845 features across 10003 samples within 1 assay 
+Active assay: RNA (19845 features, 0 variable features)
+ 7 layers present: counts.1, counts.2, counts.3, counts.4, data.2, data.3, data.4</code></pre>
+<pre class="r"><code>table(macrophage_merged_background$sample)</code></pre>
+<pre><code>
+BO_H19_LV0_premrna BO_H29_S00_premrna BO_H80_RV0_premrna BS_H35_S00_premrna 
+               297                259                527                111 
+ED_DS3_LV0_premrna        H_ZC-11-292       H0015_LA_new      H0037_RA_corr 
+               263               1148                229                151 
+   HCAHeart7664653    HCAHeart7836684    HCAHeart8287124      LV_1290_1_dcm 
+               206                 73                 18                565 
+      LV_1516_1_nf       LV_1540_2_nf       LV_1549_2_nf      LV_1685_2_hcm 
+               776                319                751                556 
+        TWCM-10-68         TWCM-11-78        TWCM-13-168         TWCM-13-84 
+               458               1748               1018                530 </code></pre>
+<pre class="r"><code># Join RNA layers if split
+if (length(grep(&quot;^counts&quot;, Layers(macrophage_merged_background[[&quot;RNA&quot;]]))) &gt; 1) {
+  macrophage_merged_background[[&quot;RNA&quot;]] &lt;- JoinLayers(macrophage_merged_background[[&quot;RNA&quot;]])
+}
+
+# ==============================================================================
+# 2. RUN GLOBAL SCTRANSFORM (Preserves cross-dataset variance)
+# ==============================================================================
+# macrophage_merged_background &lt;- SCTransform(
+#   macrophage_merged_background,
+#   vst.flavor           = &quot;v2&quot;,
+#   vars.to.regress       = &quot;percent.mt&quot;,
+#   return.only.var.genes = FALSE,
+#   verbose               = FALSE
+# )
+
+macrophage_merged_background &lt;- NormalizeData(macrophage_merged_background, normalization.method = &quot;LogNormalize&quot;, scale.factor = 10000)</code></pre>
+<pre><code>Normalizing layer: counts</code></pre>
+<pre><code>Warning: Different cells in new layer data than already exists for data</code></pre>
+<pre class="r"><code>macrophage_merged_background &lt;- FindVariableFeatures(macrophage_merged_background, selection.method = &quot;vst&quot;, nfeatures = 2000)</code></pre>
+<pre><code>Finding variable features for layer counts</code></pre>
+<pre class="r"><code>macrophage_merged_background &lt;- ScaleData(macrophage_merged_background, features = VariableFeatures(macrophage_merged_background), vars.to.regress = &quot;percent.mt&quot;)</code></pre>
+<pre><code>Regressing out percent.mt</code></pre>
+<pre><code>Centering and scaling data matrix</code></pre>
+<pre class="r"><code># ==============================================================================
+# 3. PCA &amp; CONTROLLED HARMONY INTEGRATION
+# ==============================================================================
+pcs &lt;- 20
+
+DefaultAssay(macrophage_merged_background) &lt;- &quot;RNA&quot;
+macrophage_merged_background &lt;- RunPCA(macrophage_merged_background, npcs = 30, verbose = FALSE)
+
+macrophage_merged_background &lt;- RunUMAP(macrophage_merged_background, reduction = &quot;pca&quot;, dims = 1:pcs)</code></pre>
+<pre><code>13:05:05 UMAP embedding parameters a = 0.9922 b = 1.112</code></pre>
+<pre><code>13:05:05 Read 10003 rows and found 20 numeric columns</code></pre>
+<pre><code>13:05:05 Using Annoy for neighbor search, n_neighbors = 30</code></pre>
+<pre><code>13:05:05 Building Annoy index with metric = cosine, n_trees = 50</code></pre>
+<pre><code>0%   10   20   30   40   50   60   70   80   90   100%</code></pre>
+<pre><code>[----|----|----|----|----|----|----|----|----|----|</code></pre>
+<pre><code>**************************************************|
+13:05:06 Writing NN index file to temp file /tmp/RtmpXh0cPr/file31ef6245cab008
+13:05:06 Searching Annoy index using 1 thread, search_k = 3000
+13:05:09 Annoy recall = 100%
+13:05:10 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 30
+13:05:13 Initializing from normalized Laplacian + noise (using RSpectra)
+13:05:13 Commencing optimization for 200 epochs, with 414522 positive edges
+13:05:13 Using rng type: pcg
+13:05:17 Optimization finished</code></pre>
+<pre class="r"><code>DimPlot(macrophage_merged_background, reduction = &quot;umap&quot;, group.by = c(&quot;Dataset&quot;, &quot;condition&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Group ONLY by Dataset to avoid stripping patient/disease variation
+
+macrophage_merged_harmony &lt;- harmony::RunHarmony(
+  object           = macrophage_merged_background,
+  assay.use        = &quot;RNA&quot;,
+  group.by.vars    = c(&quot;Dataset&quot;),      
+  dims.use         = 1:pcs,             
+  plot_convergence = FALSE
+)</code></pre>
+<pre><code>Transposing data matrix
+Initializing state using k-means centroids initialization
+Harmony 1/10
+Harmony 2/10
+Harmony 3/10
+Harmony 4/10
+Harmony 5/10
+Harmony 6/10
+Harmony converged after 6 iterations</code></pre>
+<pre class="r"><code># ==============================================================================
+# 4. UMAP &amp; CLUSTERING (Using matching 1:20 Harmony dimensions)
+# ==============================================================================
+macrophage_merged_harmony &lt;- RunUMAP(
+  macrophage_merged_harmony,
+  reduction = &quot;harmony&quot;,
+  return.model = TRUE,
+  dims      = 1:pcs
+)</code></pre>
+<pre><code>UMAP will return its model
+13:05:21 UMAP embedding parameters a = 0.9922 b = 1.112
+13:05:21 Read 10003 rows and found 20 numeric columns
+13:05:21 Using Annoy for neighbor search, n_neighbors = 30
+13:05:21 Building Annoy index with metric = cosine, n_trees = 50
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+13:05:22 Writing NN index file to temp file /tmp/RtmpXh0cPr/file31ef623147c6c0
+13:05:22 Searching Annoy index using 1 thread, search_k = 3000
+13:05:24 Annoy recall = 100%
+13:05:26 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 30
+13:05:27 Initializing from normalized Laplacian + noise (using RSpectra)
+13:05:27 Commencing optimization for 200 epochs, with 427324 positive edges
+13:05:27 Using rng type: pcg
+13:05:31 Optimization finished</code></pre>
+<pre class="r"><code>macrophage_merged_harmony &lt;- FindNeighbors(
+  macrophage_merged_harmony,
+  reduction = &quot;harmony&quot;,
+  dims      = 1:pcs
+)</code></pre>
+<pre><code>Computing nearest neighbor graph
+Computing SNN</code></pre>
+<pre class="r"><code>macrophage_merged_harmony &lt;- FindClusters(
+  macrophage_merged_harmony,
+  resolution = 0.1
+)</code></pre>
+<pre><code>Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 10003
+Number of edges: 375054
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.9292
+Number of communities: 6
+Elapsed time: 0 seconds</code></pre>
+<pre class="r"><code>DimPlot(macrophage_merged_harmony, reduction = &quot;umap&quot;, split.by = c(&quot;Dataset&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-8-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DimPlot(macrophage_merged_harmony, reduction = &quot;umap&quot;, split.by = c(&quot;condition&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-8-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>table(macrophage_merged_harmony$condition, macrophage_merged_harmony$Dataset)</code></pre>
+<pre><code>     
+      Chaffin  DCM Litvinukova Reichart
+  ACM       0    0           0      259
+  DCM     565  530           0     1087
+  HC     1846 4372         677      111
+  HCM     556    0           0        0</code></pre>
+<pre class="r"><code>DimPlot(macrophage_merged_harmony, reduction = &quot;umap&quot;, group.by = c(&quot;region&quot;, &quot;cell_statesL2&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-8-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>DimPlot(macrophage_merged_harmony, reduction = &quot;umap&quot;, group.by = c(&quot;seurat_clusters&quot;, &quot;RNA_snn_res.0.1&quot;))</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-8-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Set default assay to RNA for marker testing
+DefaultAssay(macrophage_merged_harmony) &lt;- &quot;RNA&quot;
+
+
+# Find markers across res.0.3 clusters
+mac_markers &lt;- FindAllMarkers(macrophage_merged_harmony, only.pos = TRUE)</code></pre>
+<pre><code>Calculating cluster 0
+Calculating cluster 1
+Calculating cluster 2
+Calculating cluster 3
+Calculating cluster 4
+Calculating cluster 5</code></pre>
+<pre class="r"><code>mac_markers %&gt;%
+    group_by(cluster) %&gt;%
+    dplyr::filter(avg_log2FC &gt; 1)</code></pre>
+<pre><code># A tibble: 7,190 × 7
+# Groups:   cluster [6]
+       p_val avg_log2FC pct.1 pct.2 p_val_adj cluster gene   
+       &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;fct&gt;   &lt;chr&gt;  
+ 1 3.14e-197       1.59 0.818 0.389 6.23e-193 0       MRC1   
+ 2 5.96e-183       1.57 0.825 0.423 1.18e-178 0       F13A1  
+ 3 3.98e-178       1.43 0.83  0.432 7.90e-174 0       CD163  
+ 4 1.26e-160       1.51 0.757 0.391 2.50e-156 0       MS4A6A 
+ 5 4.54e-149       1.11 0.868 0.576 9.02e-145 0       FRMD4B 
+ 6 5.79e-139       1.17 0.825 0.5   1.15e-134 0       RBM47  
+ 7 1.04e-122       1.30 0.737 0.422 2.07e-118 0       MERTK  
+ 8 3.07e-115       1.10 0.804 0.543 6.09e-111 0       SLC9A9 
+ 9 2.79e-114       1.04 0.849 0.596 5.53e-110 0       LDLRAD4
+10 2.53e-113       1.29 0.716 0.453 5.02e-109 0       NAIP   
+# ℹ 7,180 more rows</code></pre>
+<pre class="r"><code>mac_markers %&gt;%
+    group_by(cluster) %&gt;%
+    dplyr::filter(avg_log2FC &gt; 1) %&gt;%
+    slice_head(n = 5) %&gt;%
+    ungroup() -&gt; top10
+
+
+top10</code></pre>
+<pre><code># A tibble: 30 × 7
+       p_val avg_log2FC pct.1 pct.2 p_val_adj cluster gene   
+       &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;fct&gt;   &lt;chr&gt;  
+ 1 3.14e-197       1.59 0.818 0.389 6.23e-193 0       MRC1   
+ 2 5.96e-183       1.57 0.825 0.423 1.18e-178 0       F13A1  
+ 3 3.98e-178       1.43 0.83  0.432 7.90e-174 0       CD163  
+ 4 1.26e-160       1.51 0.757 0.391 2.50e-156 0       MS4A6A 
+ 5 4.54e-149       1.11 0.868 0.576 9.02e-145 0       FRMD4B 
+ 6 0               8.35 0.966 0.015 0         1       SLC24A3
+ 7 0               8.01 0.912 0.021 0         1       NTM    
+ 8 0               6.43 0.939 0.06  0         1       IL18R1 
+ 9 0               8.40 0.857 0.009 0         1       KIT    
+10 0               8.10 0.726 0.008 0         1       CPA3   
+# ℹ 20 more rows</code></pre>
+<pre class="r"><code>########## prep MT data log 
+
+path &lt;- &quot;/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/MT_data_small.rds&quot;
+MT_data &lt;- read_rds(path)
+
+MT_data_norm &lt;- NormalizeData(MT_data, normalization.method = &quot;LogNormalize&quot;, scale.factor = 10000)
+MT_data_norm &lt;- FindVariableFeatures(MT_data_norm, selection.method = &quot;vst&quot;, nfeatures = 2000)
+MT_data_norm &lt;- ScaleData(MT_data_norm, features = VariableFeatures(MT_data_norm), vars.to.regress = &quot;percent.mt&quot;)</code></pre>
+<pre><code>Regressing out percent.mt</code></pre>
+<pre><code>Centering and scaling data matrix</code></pre>
+<pre class="r"><code>DefaultAssay(MT_data_norm) &lt;- &quot;RNA&quot;
+
+##################################  Clean the UMAP from before
+
+macrophage_clean &lt;- subset(macrophage_merged_harmony, idents = c(0, 1, 2, 5))
+
+macrophage_clean &lt;- FindVariableFeatures(macrophage_clean, selection.method = &quot;vst&quot;, nfeatures = 2000)</code></pre>
+<pre><code>Finding variable features for layer counts</code></pre>
+<pre class="r"><code>macrophage_clean &lt;- ScaleData(macrophage_clean, features = VariableFeatures(macrophage_clean), vars.to.regress = &quot;percent.mt&quot;)</code></pre>
+<pre><code>Regressing out percent.mt
+Centering and scaling data matrix</code></pre>
+<pre><code>Warning: Different features in new layer data than already exists for
+scale.data</code></pre>
+<pre class="r"><code>macrophage_clean &lt;- RunPCA(macrophage_clean, npcs = 30, verbose = FALSE)
+
+macrophage_clean &lt;- harmony::RunHarmony(
+  object        = macrophage_clean,
+  assay.use     = &quot;RNA&quot;,
+  group.by.vars = &quot;Dataset&quot;,
+  dims.use      = 1:pcs,
+  plot_convergence = FALSE
+)</code></pre>
+<pre><code>Transposing data matrix</code></pre>
+<pre><code>Initializing state using k-means centroids initialization</code></pre>
+<pre><code>Harmony 1/10</code></pre>
+<pre><code>Harmony 2/10</code></pre>
+<pre><code>Harmony 3/10</code></pre>
+<pre><code>Harmony 4/10</code></pre>
+<pre><code>Harmony 5/10</code></pre>
+<pre><code>Harmony 6/10</code></pre>
+<pre><code>Harmony converged after 6 iterations</code></pre>
+<pre class="r"><code>macrophage_clean &lt;- RunUMAP(
+  macrophage_clean,
+  reduction    = &quot;harmony&quot;,
+  return.model = TRUE,      
+  dims         = 1:pcs
+)</code></pre>
+<pre><code>UMAP will return its model</code></pre>
+<pre><code>13:06:10 UMAP embedding parameters a = 0.9922 b = 1.112</code></pre>
+<pre><code>13:06:10 Read 9623 rows and found 20 numeric columns</code></pre>
+<pre><code>13:06:10 Using Annoy for neighbor search, n_neighbors = 30</code></pre>
+<pre><code>13:06:10 Building Annoy index with metric = cosine, n_trees = 50</code></pre>
+<pre><code>0%   10   20   30   40   50   60   70   80   90   100%</code></pre>
+<pre><code>[----|----|----|----|----|----|----|----|----|----|</code></pre>
+<pre><code>**************************************************|
+13:06:11 Writing NN index file to temp file /tmp/RtmpXh0cPr/file31ef62434efbd1
+13:06:11 Searching Annoy index using 1 thread, search_k = 3000
+13:06:13 Annoy recall = 100%
+13:06:15 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 30
+13:06:16 Initializing from normalized Laplacian + noise (using RSpectra)
+13:06:16 Commencing optimization for 500 epochs, with 406456 positive edges
+13:06:16 Using rng type: pcg
+13:06:25 Optimization finished</code></pre>
+<pre class="r"><code># Re-cluster clean reference
+macrophage_clean &lt;- FindNeighbors(macrophage_clean, reduction = &quot;harmony&quot;, dims = 1:pcs)</code></pre>
+<pre><code>Computing nearest neighbor graph
+Computing SNN</code></pre>
+<pre class="r"><code>macrophage_clean &lt;- FindClusters(macrophage_clean, resolution = 0.1)</code></pre>
+<pre><code>Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+
+Number of nodes: 9623
+Number of edges: 350622
+
+Running Louvain algorithm...
+Maximum modularity in 10 random starts: 0.9266
+Number of communities: 5
+Elapsed time: 0 seconds</code></pre>
+<pre class="r"><code>#################################################
+
+transfer_anchors &lt;- FindTransferAnchors(
+  reference            = macrophage_clean,
+  query                = MT_data_norm,
+  normalization.method = &quot;LogNormalize&quot;,
+  reference.reduction  = &quot;harmony&quot;,       
+  reduction            = &quot;pcaproject&quot;,
+  dims                 = 1:pcs,
+  verbose              = TRUE
+)</code></pre>
+<pre><code>Projecting cell embeddings
+Finding neighborhoods
+Finding anchors
+    Found 564 anchors</code></pre>
+<pre class="r"><code>MT_mapped &lt;- MapQuery(
+  anchorset           = transfer_anchors,
+  reference           = macrophage_clean,
+  query               = MT_data_norm,
+  refdata             = list(cell_type_pred = &quot;RNA_snn_res.0.1&quot;),
+  reference.reduction = &quot;harmony&quot;,       
+  reduction.model     = &quot;umap&quot;
+)</code></pre>
+<pre><code>Finding integration vectors
+Finding integration vector weights
+Predicting cell labels</code></pre>
+<pre><code>Warning: Layer counts isn&#39;t present in the assay object; returning NULL</code></pre>
+<pre><code>Warning: Layer counts isn&#39;t present in the assay object; returning NULL
+Warning: Layer counts isn&#39;t present in the assay object; returning NULL</code></pre>
+<pre><code>
+Integrating dataset 2 with reference dataset
+Finding integration vectors
+Integrating data
+Computing nearest neighbors
+Running UMAP projection
+13:06:34 Read 1126 rows
+13:06:34 Processing block 1 of 1
+13:06:34 Commencing smooth kNN distance calibration using 1 thread with target n_neighbors = 30
+13:06:34 Initializing by weighted average of neighbor coordinates using 1 thread
+13:06:34 Commencing optimization for 167 epochs, with 33780 positive edges
+13:06:34 Finished</code></pre>
+<pre class="r"><code>####################### plotting
+
+p1 &lt;- DimPlot(
+  macrophage_clean,
+  reduction = &quot;umap&quot;,
+  group.by  = &quot;RNA_snn_res.0.1&quot;,
+  label     = TRUE
+) + ggtitle(&quot;Clean Primary Reference Atlas&quot;)
+
+p2 &lt;- DimPlot(
+  MT_mapped,
+  reduction = &quot;ref.umap&quot;,
+  group.by  = &quot;predicted.cell_type_pred&quot;,
+  label     = TRUE
+) + ggtitle(&quot;Mapped MT_Data Query (LogNormalize)&quot;)
+
+p1 + p2</code></pre>
+<p><img src="figure/Integratin_test.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.5.2 (2025-10-31)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 24.04.3 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: Etc/UTC
+tzcode source: system (glibc)
+
+attached base packages:
+[1] grid      stats4    stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] future_1.75.0               ggpubr_0.6.3               
+ [3] circlize_0.4.17             lubridate_1.9.4            
+ [5] stringr_1.5.2               purrr_1.2.2                
+ [7] tidyr_1.3.1                 tidyverse_2.0.0            
+ [9] ComplexHeatmap_2.26.1       ggrain_0.1.2               
+[11] enrichplot_1.30.5           ggforce_0.5.0              
+[13] DT_0.34.0                   UCell_2.14.0               
+[15] assertthat_0.2.1            SCpubr_3.0.1               
+[17] forcats_1.0.1               fgsea_1.36.2               
+[19] DOSE_4.4.0                  GO.db_3.22.0               
+[21] org.Hs.eg.db_3.22.0         AnnotationDbi_1.72.0       
+[23] clusterProfiler_4.18.4      ggtangle_0.1.2             
+[25] ggarchery_0.4.4             EnhancedVolcano_1.28.2     
+[27] tibble_3.3.0                MAST_1.36.0                
+[29] speckle_1.10.0              harmony_1.2.4              
+[31] Rcpp_1.1.0                  clustree_0.5.1             
+[33] ggraph_2.2.2                scDblFinder_1.24.10        
+[35] SingleCellExperiment_1.32.0 SummarizedExperiment_1.40.0
+[37] Biobase_2.70.0              GenomicRanges_1.62.1       
+[39] Seqinfo_1.0.0               IRanges_2.44.0             
+[41] S4Vectors_0.48.0            BiocGenerics_0.56.0        
+[43] generics_0.1.4              MatrixGenerics_1.22.0      
+[45] matrixStats_1.5.0           ggrepel_0.9.6              
+[47] cowplot_1.2.0               patchwork_1.3.2            
+[49] scCustomize_3.2.4           hdf5r_1.3.12               
+[51] Seurat_5.4.0                SeuratObject_5.3.0         
+[53] sp_2.2-0                    ggplot2_4.0.0              
+[55] dplyr_1.1.4                 readr_2.1.5                
+[57] workflowr_1.7.2            
+
+loaded via a namespace (and not attached):
+  [1] R.methodsS3_1.8.2         ggpp_0.6.1               
+  [3] goftest_1.2-3             Biostrings_2.78.0        
+  [5] vctrs_0.7.3               spatstat.random_3.4-2    
+  [7] digest_0.6.37             png_0.1-8                
+  [9] shape_1.4.6.1             git2r_0.36.2             
+ [11] deldir_2.0-4              parallelly_1.46.1        
+ [13] fontLiberation_0.1.0      MASS_7.3-65              
+ [15] reshape2_1.4.5            foreach_1.5.2            
+ [17] httpuv_1.6.16             qvalue_2.42.0            
+ [19] withr_3.0.2               ggrastr_1.0.2            
+ [21] xfun_0.58                 ggfun_0.2.0              
+ [23] survival_3.8-3            memoise_2.0.1            
+ [25] ggbeeswarm_0.7.3          gson_0.1.0               
+ [27] janitor_2.2.1             systemfonts_1.3.1        
+ [29] tidytree_0.4.7            zoo_1.8-14               
+ [31] GlobalOptions_0.1.3       pbapply_1.7-4            
+ [33] R.oo_1.27.1               Formula_1.2-5            
+ [35] rematch2_2.1.2            KEGGREST_1.50.0          
+ [37] promises_1.4.0            otel_0.2.0               
+ [39] httr_1.4.7                rstatix_0.7.3            
+ [41] restfulr_0.0.16           globals_0.19.1           
+ [43] fitdistrplus_1.2-5        ps_1.9.1                 
+ [45] rstudioapi_0.17.1         UCSC.utils_1.6.1         
+ [47] miniUI_0.1.2              processx_3.8.6           
+ [49] curl_7.0.0                ScaledMatrix_1.19.0      
+ [51] polyclip_1.10-7           SparseArray_1.10.8       
+ [53] doParallel_1.0.17         xtable_1.8-4             
+ [55] evaluate_1.0.5            S4Arrays_1.10.1          
+ [57] hms_1.1.4                 irlba_2.3.5.1            
+ [59] colorspace_2.1-2          polynom_1.4-1            
+ [61] ROCR_1.0-12               reticulate_1.44.1        
+ [63] spatstat.data_3.1-9       magrittr_2.0.4           
+ [65] lmtest_0.9-40             snakecase_0.11.1         
+ [67] glmGamPoi_1.22.0          ggtree_4.0.4             
+ [69] later_1.4.4               viridis_0.6.5            
+ [71] lattice_0.22-7            spatstat.geom_3.6-0      
+ [73] future.apply_1.20.1       getPass_0.2-4            
+ [75] scattermore_1.2           XML_3.99-0.19            
+ [77] scuttle_1.21.0            RcppAnnoy_0.0.23         
+ [79] pillar_1.11.1             nlme_3.1-168             
+ [81] iterators_1.0.14          compiler_4.5.2           
+ [83] beachmat_2.26.0           RSpectra_0.16-2          
+ [85] stringi_1.8.7             tensor_1.5.1             
+ [87] GenomicAlignments_1.46.0  plyr_1.8.9               
+ [89] crayon_1.5.3              abind_1.4-8              
+ [91] BiocIO_1.20.0             scater_1.38.0            
+ [93] gridGraphics_0.5-1        locfit_1.5-9.12          
+ [95] graphlayouts_1.2.2        bit_4.6.0                
+ [97] fastmatch_1.1-8           whisker_0.4.1            
+ [99] codetools_0.2-20          BiocSingular_1.27.1      
+[101] bslib_0.9.0               paletteer_1.7.0          
+[103] GetoptLong_1.1.0          plotly_4.11.0            
+[105] mime_0.13                 splines_4.5.2            
+[107] fastDummies_1.7.5         sparseMatrixStats_1.22.0 
+[109] tidydr_0.0.6              utf8_1.2.6               
+[111] knitr_1.50                blob_1.2.4               
+[113] clue_0.3-67               fs_2.1.0                 
+[115] checkmate_2.3.3           listenv_0.10.0           
+[117] DelayedMatrixStats_1.32.0 ggsignif_0.6.4           
+[119] ggplotify_0.1.3           Matrix_1.7-4             
+[121] callr_3.7.6               statmod_1.5.1            
+[123] tzdb_0.5.0                tweenr_2.0.3             
+[125] pkgconfig_2.0.3           tools_4.5.2              
+[127] cachem_1.1.0              RhpcBLASctl_0.23-42      
+[129] cigarillo_1.0.0           RSQLite_2.4.3            
+[131] viridisLite_0.4.2         DBI_1.2.3                
+[133] fastmap_1.2.0             rmarkdown_2.30           
+[135] scales_1.4.0              ica_1.0-3                
+[137] Rsamtools_2.26.0          broom_1.0.10             
+[139] sass_0.4.10               ggprism_1.0.7            
+[141] dotCall64_1.2             carData_3.0-6            
+[143] RANN_2.6.2                farver_2.1.2             
+[145] scatterpie_0.2.6          tidygraph_1.3.1          
+[147] yaml_2.3.10               rtracklayer_1.70.1       
+[149] cli_3.6.5                 lifecycle_1.0.5          
+[151] uwot_0.2.4                presto_1.0.0             
+[153] backports_1.5.0           bluster_1.20.0           
+[155] BiocParallel_1.44.0       timechange_0.3.0         
+[157] gtable_0.3.6              rjson_0.2.23             
+[159] ggridges_0.5.7            progressr_0.18.0         
+[161] ape_5.8-1                 parallel_4.5.2           
+[163] limma_3.67.0              jsonlite_2.0.0           
+[165] edgeR_4.9.2               RcppHNSW_0.6.0           
+[167] bitops_1.0-9              bit64_4.6.0-1            
+[169] xgboost_3.2.0.1           Rtsne_0.17               
+[171] yulab.utils_0.2.3         spatstat.utils_3.2-0     
+[173] BiocNeighbors_2.4.0       jquerylib_0.1.4          
+[175] metapod_1.19.1            GOSemSim_2.36.0          
+[177] dqrng_0.4.1               spatstat.univar_3.1-4    
+[179] R.utils_2.13.0            lazyeval_0.2.2           
+[181] shiny_1.11.1              htmltools_0.5.8.1        
+[183] sctransform_0.4.3         rappdirs_0.3.3           
+[185] glue_1.8.0                spam_2.11-3              
+[187] XVector_0.50.0            gdtools_0.4.4            
+[189] RCurl_1.98-1.17           treeio_1.34.0            
+[191] rprojroot_2.1.1           scran_1.38.0             
+[193] gridExtra_2.3             igraph_2.2.1             
+[195] R6_2.6.1                  ggiraph_0.9.3            
+[197] labeling_0.4.3            cluster_2.1.8.1          
+[199] aplot_0.2.9               GenomeInfoDb_1.46.2      
+[201] mcprogress_0.1.1          DelayedArray_0.36.0      
+[203] tidyselect_1.2.1          vipor_0.4.7              
+[205] car_3.1-5                 fontBitstreamVera_0.1.1  
+[207] rsvd_1.0.5                KernSmooth_2.23-26       
+[209] S7_0.2.0                  fontquiver_0.2.1         
+[211] data.table_1.17.8         htmlwidgets_1.6.4        
+[213] RColorBrewer_1.1-3        rlang_1.3.0              
+[215] spatstat.sparse_3.1-0     spatstat.explore_3.5-3   
+[217] ggnewscale_0.5.2          beeswarm_0.4.0           </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
