@@ -1,0 +1,775 @@
+---
+title: "Integratin_test"
+author: "Sophie"
+date: "2026-09-18"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: inline
+---
+
+# Setup
+
+```{r, message=FALSE, warning = FALSE}
+rm(list=ls())
+gc()
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(Seurat)
+library(hdf5r)
+library(scCustomize)
+library(patchwork)
+library(cowplot)
+library(ggrepel)
+library(workflowr)
+library(scDblFinder)
+library(clustree)
+library(harmony)
+library(speckle)
+library(MAST)
+library(tibble)
+library(EnhancedVolcano)
+
+library(ggarchery)
+library(ggtangle)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(GO.db)
+library(DOSE)
+library(fgsea)
+library(forcats)
+library(SCpubr)
+library(assertthat)
+library(UCell)
+library(DT)
+
+library(ggforce) 
+library(enrichplot)
+library(ggrain)
+library(ComplexHeatmap)
+library(tidyverse)
+library(circlize)
+
+library(ggpubr)
+
+```
+
+
+
+# getting the merge to run on a small sample set
+
+```{r}
+outputdir <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/"
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/MT_data_small.rds"
+MT_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Chaffin_data_small.rds"
+Chaffin_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/DCM_data_small.rds"
+DCM_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Litvinukova_data_small.rds"
+Litvinukova_data <- read_rds(path)
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/Reichart_data_small.rds"
+Reichart_data <- read_rds(path)
+
+
+length(table(MT_data$sample))
+length(table(Chaffin_data$sample))
+length(table(DCM_data$sample))
+length(table(Litvinukova_data$sample))
+table(Litvinukova_data$condition)
+length(table(Reichart_data$sample))
+table(Reichart_data$condition)
+```
+
+# subsetting max 5 samples per dataset to test
+
+```{r}
+set.seed(42)
+
+#Pick up to n samples per object. method = "largest" stress-tests with your
+#biggest samples first (catches hangs/OOM fastest); "random" gives a more
+#§representative but less adversarial test.
+subset_max_samples <- function(obj, n = 2, method = c("largest", "random")) {
+  method <- match.arg(method)
+  stopifnot("sample" %in% colnames(obj@meta.data))
+
+  tab <- table(obj$sample)
+  tab <- tab[tab > 0]
+
+  chosen <- if (method == "largest") {
+    names(sort(tab, decreasing = TRUE))[seq_len(min(n, length(tab)))]
+  } else {
+    sample(names(tab), min(n, length(tab)))
+  }
+
+  message(sprintf("%-12s: %d -> %d samples | %d -> %d cells",
+                   unique(obj$Dataset), length(tab), length(chosen),
+                   ncol(obj), sum(tab[chosen])))
+
+  cells_keep <- colnames(obj)[obj$sample %in% chosen]
+  subset(obj, cells = cells_keep)
+}
+
+# apply to each loaded object
+MT_data           <- subset_max_samples(MT_data,           n = 5, method = "random")
+Chaffin_data       <- subset_max_samples(Chaffin_data,      n = 5, method = "random")
+DCM_data           <- subset_max_samples(DCM_data,          n = 5, method = "random")
+Litvinukova_data   <- subset_max_samples(Litvinukova_data,  n = 5, method = "random")
+Reichart_data      <- subset_max_samples(Reichart_data,     n = 5, method = "random")
+
+
+```       
+       
+# now intersect the common genes 
+
+```{r}
+
+common_genes_mac <- Reduce(
+  intersect,
+  list(
+    rownames(MT_data),
+    rownames(Reichart_data),
+    rownames(Chaffin_data),
+    rownames(Litvinukova_data),
+    rownames(DCM_data)
+  )
+)
+
+######## merge the object
+
+macrophage_merged <- merge(
+  x = MT_data,
+  y = list(Reichart_data, Chaffin_data, Litvinukova_data, DCM_data),
+  add.cell.ids = c("MT", "Reichart", "Chaffin", "Litvinukova", "DCM"),
+  project = "Merged_Macrophage_Atlas"
+)
+
+# 4. Subset merged object to common gene set 
+macrophage_merged <- macrophage_merged[common_genes_mac, ]
+macrophage_merged
+table(macrophage_merged$sample)
+
+# Clean up raw workspace objects to free memory
+#rm(MT_data, Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+
+# QC Visualization
+VlnPlot(
+  macrophage_merged,
+  features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
+  group.by = "Dataset",
+  pt.size = 0,
+  raster = FALSE
+)
+
+table(macrophage_merged$condition)
+```
+```{r}
+# --------------------------------------------------------------
+# 1. Split, filter tiny samples, run SCTransform per sample
+# --------------------------------------------------------------
+
+DefaultAssay(macrophage_merged) <- "RNA"
+
+# collapse any pre-existing multi-layer counts into one, BEFORE splitting by sample
+if (length(grep("^counts", Layers(macrophage_merged[["RNA"]]))) > 1) {
+  macrophage_merged[["RNA"]] <- JoinLayers(macrophage_merged[["RNA"]])
+  message("Joined RNA layers -> ", paste(Layers(macrophage_merged[["RNA"]]), collapse = ", "))
+}
+
+table(macrophage_merged$sample)
+
+
+sample_list <- SplitObject(macrophage_merged, split.by = "sample")
+
+sample_sizes  <- sapply(sample_list, ncol)
+valid_samples <- names(sample_sizes[sample_sizes >= 100])
+
+message(length(sample_list) - length(valid_samples),
+        " tiny samples (<100 cells) excluded to prevent regression errors.")
+
+sample_list <- sample_list[valid_samples]
+
+sct_list <- list()
+
+for (s in names(sample_list)) {
+  if ("SCT" %in% names(sample_list[[s]]@assays)) {
+    sample_list[[s]][["SCT"]] <- NULL
+  }
+
+  sct_list[[s]] <- tryCatch({
+    SCTransform(
+      sample_list[[s]],
+      vst.flavor            = "v2",
+      vars.to.regress        = "percent.mt",
+      return.only.var.genes  = TRUE,
+      variable.features.n    = 2000,
+      min_cells               = 5,
+      verbose                  = FALSE
+    )
+  }, error = function(e) {
+    warning("SCTransform failed for sample ", s, ": ", e$message)
+    return(NULL)
+  })
+}
+
+# report + drop failures explicitly, don't lose track of what vanished
+failed <- names(sct_list)[sapply(sct_list, is.null)]
+if (length(failed) > 0) {
+  message(length(failed), " samples failed SCTransform: ",
+          paste(failed, collapse = ", "))
+}
+sct_list <- sct_list[!sapply(sct_list, is.null)]
+stopifnot(length(sct_list) > 0)
+
+############################## new code
+
+# ==============================================================
+# NEW SECTION 2 & 3: PrepSCTIntegration + Low-RAM Merge
+# (REPLACES YOUR OLD SECTIONS 2 AND 3 ENTIRELY)
+# ==============================================================
+
+# Step A: Find the consensus 2,000 variable features across all samples
+features <- SelectIntegrationFeatures(object.list = sct_list, nfeatures = 2000)
+
+# Step B: Calculate scale.data inside EACH individual sample before merging
+# (Extremely fast & low RAM because each sample is only ~450 cells)
+message("Prepping SCT residuals per sample across ", length(sct_list), " samples...")
+sct_list <- PrepSCTIntegration(
+  object.list     = sct_list,
+  anchor.features = features,
+  verbose         = FALSE
+)
+
+# Step C: Merge the objects
+# merge.data = TRUE safely concatenates the small 2,000-gene scale.data matrices
+message("Merging samples...")
+macrophage_merged <- merge(
+  x          = sct_list[[1]],
+  y          = sct_list[-1],
+  merge.data = TRUE
+)
+
+# Step D: Assign Default Assay and Variable Features
+DefaultAssay(macrophage_merged)     <- "SCT"
+VariableFeatures(macrophage_merged) <- features
+
+# Step E: Join RNA counts layers if needed for downstream operations
+DefaultAssay(macrophage_merged) <- "RNA"
+rna_layers <- grep("^counts", Layers(macrophage_merged[["RNA"]]), value = TRUE)
+if (length(rna_layers) > 1) {
+  macrophage_merged[["RNA"]] <- JoinLayers(macrophage_merged[["RNA"]])
+}
+
+# Switch back to SCT for PCA / Harmony
+DefaultAssay(macrophage_merged) <- "SCT"
+
+# Verification
+sd_dim <- dim(GetAssayData(macrophage_merged, assay = "SCT", layer = "scale.data"))
+message("Final scale.data dimensions: ", sd_dim[1], " x ", sd_dim[2])
+stopifnot(all(sd_dim > 0))
+
+macrophage_merged
+
+
+```
+
+## PCA
+
+```{r pca fibroblasts combined, fig.width=6, fig.height=4}
+macrophage_merged <- RunPCA(macrophage_merged, npcs = 50, verbose = FALSE)
+ElbowPlot(macrophage_merged, ndims = 50)
+```
+
+## Harmony - too much
+
+```{r harmony fibroblasts combined}
+#macrophage_merged@meta.data
+# macrophage_merged <- harmony::RunHarmony(
+#   object = macrophage_merged,
+#   assay.use = "SCT",
+#   group.by.vars = c("sample", "Dataset"),
+#   dims.use = 1:50,
+#   plot_convergence = TRUE,
+#   .options = harmony::harmony_options(max.iter.cluster = 100)
+# )
+```
+
+## Clustering
+
+```{r clustering fibroblasts combined}
+DefaultAssay(macrophage_merged) <- "SCT"
+
+# macrophage_merged <- RunUMAP(
+#   macrophage_merged,
+#   reduction = "pca",
+#   dims = 1:15
+# )
+macrophage_merged <- RunUMAP(
+  macrophage_merged, 
+  reduction = "pca", 
+  dims = 1:15, 
+  min.dist = 0.05,   # Default is 0.3; lowering it separates dense continuous populations
+  spread = 1.2,
+  n.neighbors = 50   # Preserves global structure better across large cell counts
+)
+DimPlot(macrophage_merged, reduction = "umap", group.by = "Dataset")
+
+macrophage_merged <- FindNeighbors(
+  macrophage_merged,
+  reduction = "pca",
+  dims = 1:15
+)
+
+macrophage_merged <- FindClusters(
+  macrophage_merged,
+  resolution = seq(0.1, 0.5, by = 0.1)
+  )
+Idents(macrophage_merged) <- "SCT_snn_res.0.2"
+DimPlot(macrophage_merged, reduction = "umap")
+table(macrophage_merged$cell_statesL2, macrophage_merged$SCT_snn_res.0.2)
+```
+
+```{r clustree, fig.width=8, fig.height=10}
+clustree::clustree(macrophage_merged@meta.data[,grep("SCT_snn_res", colnames(macrophage_merged@meta.data))], prefix = "SCT_snn_res.")
+```
+
+## UMAPs combined 
+
+Deciding on SCT_snn 0.3
+
+```{r umaps  combined, fig.width=11, fig.height=10}
+Idents(macrophage_merged) <- "SCT_snn_res.0.3"
+
+p1 <- DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "SCT_snn_res.0.3",
+  label = TRUE,
+  repel = TRUE,
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  NoLegend() +
+  ggtitle("Combined Macrophages subclusters") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+p2 <- DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "Dataset",
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  ggtitle("Dataset") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+p <- DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "cell_statesL2",
+  shuffle = TRUE,
+  raster = FALSE,
+  pt.size = 0.1
+) +
+  ggtitle("cell_statesL1") +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
+  )
+
+p3 <- DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  split.by = "Dataset",
+  group.by = "SCT_snn_res.0.3",
+  label = FALSE,
+  shuffle = TRUE,
+  pt.size = 0.1,
+  raster = FALSE,
+  ncol = 3
+) +
+  NoLegend() +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+p4 <- DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  split.by = "condition",
+  group.by = "SCT_snn_res.0.3",
+  label = FALSE,
+  shuffle = TRUE,
+  pt.size = 0.1,
+  raster = FALSE,
+  ncol = 3
+) +
+  NoLegend() +
+  theme(
+    axis.text = element_text(size = 8, face = "bold"),
+    axis.title = element_text(size = 12, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+(p1 | p2) / (p3 | p)
+
+DimPlot(
+  macrophage_merged,
+  reduction = "umap",
+  group.by = "condition",
+  label = FALSE,
+  shuffle = TRUE,
+  pt.size = 0.1,
+  raster = FALSE)
+
+table(macrophage_merged$method)
+```
+
+# save Rds
+
+```{r}
+
+# Save obj
+
+outputdir <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/"
+
+#saveRDS(macrophage_merged, file = file.path(outputdir, "Mac_Integrated3_MT_Derived_sample.rds"))
+
+
+```
+
+
+# another test to combat over integration:
+
+
+```{r}
+
+
+
+
+# ==============================================================================
+# 1. MERGE RAW RNA ASSAYS (Keep full gene set for SCT modeling)
+# ==============================================================================
+DefaultAssay(MT_data) <- "RNA"
+
+macrophage_merged <- merge(
+  x = MT_data,
+  y = list(Reichart_data, Chaffin_data, Litvinukova_data, DCM_data),
+  add.cell.ids = c("MT", "Reichart", "Chaffin", "Litvinukova", "DCM"),
+  project = "Merged_Macrophage_Atlas"
+)
+
+# Clean workspace memory
+#rm(MT_data, Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+macrophage_merged <- macrophage_merged[common_genes_mac, ]
+macrophage_merged
+table(macrophage_merged$sample)
+
+
+# Join RNA layers if split
+if (length(grep("^counts", Layers(macrophage_merged[["RNA"]]))) > 1) {
+  macrophage_merged[["RNA"]] <- JoinLayers(macrophage_merged[["RNA"]])
+}
+
+# ==============================================================================
+# 2. RUN GLOBAL SCTRANSFORM (Preserves cross-dataset variance)
+# ==============================================================================
+macrophage_merged <- SCTransform(
+  macrophage_merged,
+  vst.flavor           = "v2",
+  vars.to.regress       = "percent.mt",
+  return.only.var.genes = FALSE,
+  verbose               = FALSE
+)
+
+
+# ==============================================================================
+# 3. PCA & CONTROLLED HARMONY INTEGRATION
+# ==============================================================================
+pcs <- 20
+
+DefaultAssay(macrophage_merged) <- "SCT"
+macrophage_merged <- RunPCA(macrophage_merged, npcs = 30, verbose = FALSE)
+
+macrophage_merged <- RunUMAP(macrophage_merged, reduction = "pca", dims = 1:pcs)
+
+DimPlot(macrophage_merged, reduction = "umap", group.by = c("Dataset", "condition"))
+
+# Group ONLY by Dataset to avoid stripping patient/disease variation
+# Using 20 PCs and setting theta = 1 prevents over-clustering
+macrophage_merged_harmony <- harmony::RunHarmony(
+  object           = macrophage_merged,
+  assay.use        = "SCT",
+  group.by.vars    = c("Dataset"),      
+  dims.use         = 1:pcs,             # Gentler integration penalty (default is 2)
+  plot_convergence = FALSE
+)
+
+# ==============================================================================
+# 4. UMAP & CLUSTERING (Using matching 1:20 Harmony dimensions)
+# ==============================================================================
+macrophage_merged_harmony <- RunUMAP(
+  macrophage_merged_harmony,
+  reduction = "harmony",
+  dims      = 1:pcs
+)
+
+macrophage_merged_harmony <- FindNeighbors(
+  macrophage_merged_harmony,
+  reduction = "harmony",
+  dims      = 1:pcs
+)
+
+macrophage_merged_harmony <- FindClusters(
+  macrophage_merged_harmony,
+  resolution = 0.2
+)
+
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = c("Dataset", "condition"))
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = c("region", "cell_statesL2"))
+```
+
+
+# Map the atlas then add MT
+
+# using log tranform
+
+```{r}
+
+
+common_genes_mac <- Reduce(
+  intersect,
+  list(
+    rownames(MT_data),
+    rownames(Reichart_data),
+    rownames(Chaffin_data),
+    rownames(Litvinukova_data),
+    rownames(DCM_data)
+  )
+)
+
+
+# ==============================================================================
+# 1. MERGE RAW RNA ASSAYS (Keep full gene set for SCT modeling)
+# ==============================================================================
+DefaultAssay(Reichart_data) <- "RNA"
+
+macrophage_merged_background <- merge(
+  x = Reichart_data,
+  y = list(Chaffin_data, Litvinukova_data, DCM_data),
+  add.cell.ids = c("Reichart", "Chaffin", "Litvinukova", "DCM"),
+  project = "Merged_Macrophage_Atlas"
+)
+
+# Clean workspace memory
+#rm(MT_data, Reichart_data, Chaffin_data, Litvinukova_data, DCM_data)
+#gc()
+
+macrophage_merged_background <- macrophage_merged_background[common_genes_mac, ]
+macrophage_merged_background
+table(macrophage_merged_background$sample)
+
+
+# Join RNA layers if split
+if (length(grep("^counts", Layers(macrophage_merged_background[["RNA"]]))) > 1) {
+  macrophage_merged_background[["RNA"]] <- JoinLayers(macrophage_merged_background[["RNA"]])
+}
+
+# ==============================================================================
+# 2. RUN GLOBAL SCTRANSFORM (Preserves cross-dataset variance)
+# ==============================================================================
+# macrophage_merged_background <- SCTransform(
+#   macrophage_merged_background,
+#   vst.flavor           = "v2",
+#   vars.to.regress       = "percent.mt",
+#   return.only.var.genes = FALSE,
+#   verbose               = FALSE
+# )
+
+macrophage_merged_background <- NormalizeData(macrophage_merged_background, normalization.method = "LogNormalize", scale.factor = 10000)
+macrophage_merged_background <- FindVariableFeatures(macrophage_merged_background, selection.method = "vst", nfeatures = 2000)
+macrophage_merged_background <- ScaleData(macrophage_merged_background, features = VariableFeatures(macrophage_merged_background), vars.to.regress = "percent.mt")
+
+# ==============================================================================
+# 3. PCA & CONTROLLED HARMONY INTEGRATION
+# ==============================================================================
+pcs <- 20
+
+DefaultAssay(macrophage_merged_background) <- "RNA"
+macrophage_merged_background <- RunPCA(macrophage_merged_background, npcs = 30, verbose = FALSE)
+
+macrophage_merged_background <- RunUMAP(macrophage_merged_background, reduction = "pca", dims = 1:pcs)
+
+DimPlot(macrophage_merged_background, reduction = "umap", group.by = c("Dataset", "condition"))
+
+# Group ONLY by Dataset to avoid stripping patient/disease variation
+
+macrophage_merged_harmony <- harmony::RunHarmony(
+  object           = macrophage_merged_background,
+  assay.use        = "RNA",
+  group.by.vars    = c("Dataset"),      
+  dims.use         = 1:pcs,             
+  plot_convergence = FALSE
+)
+
+# ==============================================================================
+# 4. UMAP & CLUSTERING (Using matching 1:20 Harmony dimensions)
+# ==============================================================================
+macrophage_merged_harmony <- RunUMAP(
+  macrophage_merged_harmony,
+  reduction = "harmony",
+  return.model = TRUE,
+  dims      = 1:pcs
+)
+
+macrophage_merged_harmony <- FindNeighbors(
+  macrophage_merged_harmony,
+  reduction = "harmony",
+  dims      = 1:pcs
+)
+
+macrophage_merged_harmony <- FindClusters(
+  macrophage_merged_harmony,
+  resolution = 0.1
+)
+
+DimPlot(macrophage_merged_harmony, reduction = "umap", split.by = c("Dataset"))
+DimPlot(macrophage_merged_harmony, reduction = "umap", split.by = c("condition"))
+table(macrophage_merged_harmony$condition, macrophage_merged_harmony$Dataset)
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = c("region", "cell_statesL2"))
+DimPlot(macrophage_merged_harmony, reduction = "umap", group.by = c("seurat_clusters", "RNA_snn_res.0.1"))
+
+# Set default assay to RNA for marker testing
+DefaultAssay(macrophage_merged_harmony) <- "RNA"
+
+
+# Find markers across res.0.3 clusters
+mac_markers <- FindAllMarkers(macrophage_merged_harmony, only.pos = TRUE)
+
+mac_markers %>%
+    group_by(cluster) %>%
+    dplyr::filter(avg_log2FC > 1)
+
+mac_markers %>%
+    group_by(cluster) %>%
+    dplyr::filter(avg_log2FC > 1) %>%
+    slice_head(n = 5) %>%
+    ungroup() -> top10
+
+
+top10
+```
+
+
+
+```{r}
+########## prep MT data log 
+
+path <- "/shares/rheumatologie.usz/Sophie/Gabi_Projects/Data_Sets_Heart/MT_data_small.rds"
+MT_data <- read_rds(path)
+
+MT_data_norm <- NormalizeData(MT_data, normalization.method = "LogNormalize", scale.factor = 10000)
+MT_data_norm <- FindVariableFeatures(MT_data_norm, selection.method = "vst", nfeatures = 2000)
+MT_data_norm <- ScaleData(MT_data_norm, features = VariableFeatures(MT_data_norm), vars.to.regress = "percent.mt")
+
+DefaultAssay(MT_data_norm) <- "RNA"
+
+##################################  Clean the UMAP from before
+
+macrophage_clean <- subset(macrophage_merged_harmony, idents = c(0, 1, 2, 5))
+
+macrophage_clean <- FindVariableFeatures(macrophage_clean, selection.method = "vst", nfeatures = 2000)
+macrophage_clean <- ScaleData(macrophage_clean, features = VariableFeatures(macrophage_clean), vars.to.regress = "percent.mt")
+macrophage_clean <- RunPCA(macrophage_clean, npcs = 30, verbose = FALSE)
+
+macrophage_clean <- harmony::RunHarmony(
+  object        = macrophage_clean,
+  assay.use     = "RNA",
+  group.by.vars = "Dataset",
+  dims.use      = 1:pcs,
+  plot_convergence = FALSE
+)
+
+macrophage_clean <- RunUMAP(
+  macrophage_clean,
+  reduction    = "harmony",
+  return.model = TRUE,      
+  dims         = 1:pcs
+)
+
+# Re-cluster clean reference
+macrophage_clean <- FindNeighbors(macrophage_clean, reduction = "harmony", dims = 1:pcs)
+macrophage_clean <- FindClusters(macrophage_clean, resolution = 0.1)
+
+
+#################################################
+
+transfer_anchors <- FindTransferAnchors(
+  reference            = macrophage_clean,
+  query                = MT_data_norm,
+  normalization.method = "LogNormalize",
+  reference.reduction  = "harmony",       
+  reduction            = "pcaproject",
+  dims                 = 1:pcs,
+  verbose              = TRUE
+)
+
+
+MT_mapped <- MapQuery(
+  anchorset           = transfer_anchors,
+  reference           = macrophage_clean,
+  query               = MT_data_norm,
+  refdata             = list(cell_type_pred = "RNA_snn_res.0.1"),
+  reference.reduction = "harmony",       
+  reduction.model     = "umap"
+)
+
+####################### plotting
+
+p1 <- DimPlot(
+  macrophage_clean,
+  reduction = "umap",
+  group.by  = "RNA_snn_res.0.1",
+  label     = TRUE
+) + ggtitle("Clean Primary Reference Atlas")
+
+p2 <- DimPlot(
+  MT_mapped,
+  reduction = "ref.umap",
+  group.by  = "predicted.cell_type_pred",
+  label     = TRUE
+) + ggtitle("Mapped MT_Data Query (LogNormalize)")
+
+p1 + p2
+
+
+```
+
+
+```{r}
+
+
+```

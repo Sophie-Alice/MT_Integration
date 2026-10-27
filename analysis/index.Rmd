@@ -14,6 +14,7 @@ editor_options:
 The Files are too big to intergate it with the rest of the project
 
 * [Integration Visualisations](Mac_Integrated_inspection.html)
+* [Integration Div. Tests](Integratin_test.html)
 * [Integration log Norm](Integration_log_norm.html)
 * [Integration last try findanchors](OneDSonly.html)
 
